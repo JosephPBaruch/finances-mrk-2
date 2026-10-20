@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="src/FinanceApp.Api/FinanceApp.Api.csproj" />
+  <Project Path="tests/FinanceApp.Api.Tests/FinanceApp.Api.Tests.csproj" />
+</Solution>

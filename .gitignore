@@ -147,3 +147,15 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# .NET and local development data
+**/bin/
+**/obj/
+.vs/
+.idea/
+.vscode/
+.DS_Store
+src/FinanceApp.Api/storage/
+*.db
+*.db-shm
+*.db-wal

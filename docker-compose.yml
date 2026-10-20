@@ -1,0 +1,30 @@
+services:
+  data-permissions:
+    image: alpine:3.22
+    user: root
+    command: ["sh", "-c", "chown -R 1654:1654 /data && chmod 770 /data"]
+    volumes:
+      - finance-data:/data
+    restart: "no"
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      Plaid__ClientId: ${PLAID_CLIENT_ID:-}
+      Plaid__Secret: ${PLAID_SECRET:-}
+      Plaid__Environment: ${PLAID_ENVIRONMENT:-sandbox}
+      Encryption__Key: ${ENCRYPTION_KEY:?Set ENCRYPTION_KEY to a Base64-encoded 32-byte key}
+    ports:
+      - "8080:8080"
+    volumes:
+      - finance-data:/data
+    depends_on:
+      data-permissions:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+volumes:
+  finance-data:
