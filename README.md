@@ -93,7 +93,8 @@ The initial migration seeds `developer@financeapp.local`. Application code resol
 ## Run and use Swagger
 
 ```bash
-dotnet run --project src/FinanceApp.Api
+ASPNETCORE_ENVIRONMENT=Development \
+dotnet run --project src/FinanceApp.Api -- --urls http://localhost:5000
 ```
 
 Open the `/swagger` URL printed by ASP.NET Core (typically `http://localhost:5xxx/swagger`). Swagger is deliberately disabled outside Development.
