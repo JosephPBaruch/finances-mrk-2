@@ -49,8 +49,14 @@ internal sealed class TestDatabase : IAsyncDisposable
         };
         var account = new FinancialAccount
         {
-            Id = Guid.NewGuid(), BankConnectionId = connection.Id, PlaidAccountId = "account-1",
-            Name = "Checking", Type = "depository", Subtype = "checking", CreatedAt = now, UpdatedAt = now
+            Id = Guid.NewGuid(),
+            BankConnectionId = connection.Id,
+            PlaidAccountId = "account-1",
+            Name = "Checking",
+            Type = "depository",
+            Subtype = "checking",
+            CreatedAt = now,
+            UpdatedAt = now
         };
         connection.Accounts.Add(account);
         Context.BankConnections.Add(connection);

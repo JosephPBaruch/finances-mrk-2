@@ -32,7 +32,7 @@ public sealed class TransactionsController(FinanceDbContext dbContext, ICurrentU
             }));
         if (startDate.HasValue && endDate.HasValue && startDate > endDate)
             return BadRequest(new ValidationProblemDetails(new Dictionary<string, string[]>
-                { ["dateRange"] = ["startDate cannot be after endDate."] }));
+            { ["dateRange"] = ["startDate cannot be after endDate."] }));
 
         var user = await currentUserService.GetCurrentUserAsync(cancellationToken);
         var query = dbContext.Transactions.AsNoTracking()
@@ -87,7 +87,7 @@ public sealed class TransactionsController(FinanceDbContext dbContext, ICurrentU
         {
             if (!request.IsReviewed.HasValue)
                 return BadRequest(new ValidationProblemDetails(new Dictionary<string, string[]>
-                    { ["isReviewed"] = ["isReviewed cannot be null."] }));
+                { ["isReviewed"] = ["isReviewed cannot be null."] }));
             transaction.IsReviewed = request.IsReviewed.Value;
         }
         if (request.NotesSpecified) transaction.Notes = request.Notes;

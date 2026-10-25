@@ -31,7 +31,10 @@ public sealed class TransactionSyncServiceTests
         var seeded = await database.SeedConnectionAsync("old-cursor");
         var category = new Category
         {
-            Id = Guid.NewGuid(), UserId = seeded.User.Id, Name = "My category", CreatedAt = DateTimeOffset.UtcNow
+            Id = Guid.NewGuid(),
+            UserId = seeded.User.Id,
+            Name = "My category",
+            CreatedAt = DateTimeOffset.UtcNow
         };
         var existing = StoredTransaction(seeded.Account.Id, "tx-1");
         existing.UserCategoryId = category.Id;
