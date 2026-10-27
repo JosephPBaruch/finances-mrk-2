@@ -20,7 +20,10 @@ var builder = WebApplication.CreateBuilder(args);
 // Calling Build() later turns these registrations into the service provider that
 // supplies constructor arguments to controllers and services automatically.
 builder.Services.AddProblemDetails();
-builder.Services.AddControllers();
+builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
+{
+    options.InvalidModelStateResponseFactory = ApiValidationProblemDetailsFactory.Create;
+});
 
 // Bind the "Plaid" and "Encryption" configuration sections to typed options classes.
 // IOptions<PlaidOptions> can then be constructor-injected wherever it is needed.
@@ -76,6 +79,9 @@ var app = builder.Build();
 // Everything below configures the HTTP request pipeline. Requests pass through the
 // exception middleware first, then are routed to the matching controller action.
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+// Turn framework-generated empty error responses (for example, unknown routes or methods)
+// into the same RFC 7807 Problem Details format used by controllers and exception handling.
+app.UseStatusCodePages();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

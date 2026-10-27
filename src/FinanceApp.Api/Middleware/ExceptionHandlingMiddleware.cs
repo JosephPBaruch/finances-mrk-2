@@ -55,6 +55,7 @@ public sealed class ExceptionHandlingMiddleware(
         ResourceNotFoundException => (404, "Resource not found", exception.Message),
         DuplicateConnectionException => (409, "Duplicate connection", exception.Message),
         ForbiddenOperationException => (403, "Operation not allowed", exception.Message),
+        BadHttpRequestException => (400, "Invalid request", "The HTTP request could not be parsed or validated."),
         SyncFailedException => (409, "Synchronization failed", exception.Message),
         PlaidApiException { ErrorCode: "INVALID_PUBLIC_TOKEN" } => (400, "Invalid public token", exception.Message),
         PlaidApiException { ErrorCode: "ITEM_LOGIN_REQUIRED" } => (409, "Connection update required", exception.Message),

@@ -26,14 +26,16 @@ public sealed class AccountsController(FinanceDbContext dbContext, ICurrentUserS
     }
 
     /// <summary>Gets one financial account owned by the current development user.</summary>
-    [HttpGet("{id:guid}")]
+    /// <param name="accountId">The application's accountId returned by GET /api/accounts or in a connection's accounts collection. This is not a bankConnectionId or PlaidAccountId.</param>
+    /// <param name="cancellationToken">Canceled when the client disconnects.</param>
+    [HttpGet("{accountId:guid}")]
     [ProducesResponseType<AccountResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<AccountResponse>> GetById(Guid id, CancellationToken cancellationToken)
+    public async Task<ActionResult<AccountResponse>> GetById(Guid accountId, CancellationToken cancellationToken)
     {
         var user = await currentUserService.GetCurrentUserAsync(cancellationToken);
         var account = await dbContext.FinancialAccounts.AsNoTracking()
-            .SingleOrDefaultAsync(x => x.Id == id && x.BankConnection.UserId == user.Id, cancellationToken)
+            .SingleOrDefaultAsync(x => x.Id == accountId && x.BankConnection.UserId == user.Id, cancellationToken)
             ?? throw new ResourceNotFoundException("Financial account was not found.");
         return Ok(account.ToResponse());
     }

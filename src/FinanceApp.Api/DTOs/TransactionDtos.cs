@@ -4,8 +4,8 @@ using System.Text.Json.Serialization;
 namespace FinanceApp.Api.DTOs;
 
 public sealed record TransactionResponse(
-    Guid Id,
-    Guid FinancialAccountId,
+    Guid TransactionId,
+    Guid AccountId,
     string PlaidTransactionId,
     DateOnly Date,
     DateOnly? AuthorizedDate,

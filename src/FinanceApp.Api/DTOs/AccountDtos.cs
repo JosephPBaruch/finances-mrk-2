@@ -1,7 +1,7 @@
 namespace FinanceApp.Api.DTOs;
 
 public sealed record AccountResponse(
-    Guid Id,
+    Guid AccountId,
     Guid BankConnectionId,
     string Name,
     string? OfficialName,
@@ -14,7 +14,7 @@ public sealed record AccountResponse(
     DateTimeOffset UpdatedAt);
 
 public sealed record ConnectionResponse(
-    Guid Id,
+    Guid BankConnectionId,
     string? InstitutionId,
     string? InstitutionName,
     string Status,

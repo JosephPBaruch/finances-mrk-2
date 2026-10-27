@@ -37,7 +37,8 @@ public sealed class PlaidController(
     {
         var user = await currentUserService.GetCurrentUserAsync(cancellationToken);
         var result = await connectionService.ExchangeAndCreateAsync(user.Id, request.PublicToken, cancellationToken);
-        return CreatedAtAction(nameof(ConnectionsController.GetById), "Connections", new { id = result.BankConnectionId }, result);
+        return CreatedAtAction(nameof(ConnectionsController.GetById), "Connections",
+            new { bankConnectionId = result.BankConnectionId }, result);
     }
 
     /// <summary>Creates and stores a simulated Plaid Item without launching Link. Development/Sandbox only.</summary>
@@ -54,6 +55,7 @@ public sealed class PlaidController(
         var publicToken = await plaidService.CreateSandboxPublicTokenAsync(request.InstitutionId, cancellationToken);
         var user = await currentUserService.GetCurrentUserAsync(cancellationToken);
         var result = await connectionService.ExchangeAndCreateAsync(user.Id, publicToken, cancellationToken);
-        return CreatedAtAction(nameof(ConnectionsController.GetById), "Connections", new { id = result.BankConnectionId }, result);
+        return CreatedAtAction(nameof(ConnectionsController.GetById), "Connections",
+            new { bankConnectionId = result.BankConnectionId }, result);
     }
 }

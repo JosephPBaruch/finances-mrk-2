@@ -11,9 +11,19 @@ namespace FinanceApp.Api.Controllers;
 [Produces("application/json")]
 public sealed class TransactionsController(FinanceDbContext dbContext, ICurrentUserService currentUserService) : ControllerBase
 {
-    /// <summary>Queries active transactions with filtering and pagination.</summary>
+    /// <summary>Queries transactions previously synchronized from Plaid into this application's database.</summary>
+    /// <param name="accountId">Optional application accountId returned by GET /api/accounts. This is not a bankConnectionId or PlaidAccountId.</param>
+    /// <param name="startDate">Optional inclusive start date in YYYY-MM-DD format.</param>
+    /// <param name="endDate">Optional inclusive end date in YYYY-MM-DD format. It cannot be earlier than startDate.</param>
+    /// <param name="categoryId">Optional application-defined user category ID.</param>
+    /// <param name="isReviewed">Optional review-status filter: true or false.</param>
+    /// <param name="pending">Optional Plaid pending-status filter: true or false.</param>
+    /// <param name="page">One-based page number. Minimum: 1.</param>
+    /// <param name="pageSize">Number of transactions per page. Range: 1–200.</param>
+    /// <param name="cancellationToken">Canceled when the client disconnects.</param>
     [HttpGet]
     [ProducesResponseType<PagedResponse<TransactionResponse>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PagedResponse<TransactionResponse>>> GetAll(
         [FromQuery] Guid? accountId,
         [FromQuery] DateOnly? startDate,
@@ -45,7 +55,9 @@ public sealed class TransactionsController(FinanceDbContext dbContext, ICurrentU
         if (pending.HasValue) query = query.Where(x => x.Pending == pending);
 
         var totalCount = await query.CountAsync(cancellationToken);
-        var items = await query.OrderByDescending(x => x.Date).ThenByDescending(x => x.CreatedAt)
+        // SQLite cannot translate ORDER BY for DateTimeOffset values. Use the primary key as a
+        // deterministic tie-breaker so pagination remains stable without materializing every row.
+        var items = await query.OrderByDescending(x => x.Date).ThenByDescending(x => x.Id)
             .Skip((page - 1) * pageSize).Take(pageSize)
             .Select(x => x.ToResponse()).ToArrayAsync(cancellationToken);
         var totalPages = totalCount == 0 ? 0 : (int)Math.Ceiling(totalCount / (double)pageSize);
@@ -53,28 +65,34 @@ public sealed class TransactionsController(FinanceDbContext dbContext, ICurrentU
     }
 
     /// <summary>Gets one active transaction owned by the current user.</summary>
-    [HttpGet("{id:guid}")]
+    /// <param name="transactionId">The application's transactionId returned by GET /api/transactions. This is not PlaidTransactionId.</param>
+    /// <param name="cancellationToken">Canceled when the client disconnects.</param>
+    [HttpGet("{transactionId:guid}")]
     [ProducesResponseType<TransactionResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<TransactionResponse>> GetById(Guid id, CancellationToken cancellationToken)
+    public async Task<ActionResult<TransactionResponse>> GetById(Guid transactionId, CancellationToken cancellationToken)
     {
         var user = await currentUserService.GetCurrentUserAsync(cancellationToken);
         var transaction = await dbContext.Transactions.AsNoTracking().SingleOrDefaultAsync(
-            x => x.Id == id && !x.IsRemoved && x.FinancialAccount.BankConnection.UserId == user.Id, cancellationToken)
+            x => x.Id == transactionId && !x.IsRemoved && x.FinancialAccount.BankConnection.UserId == user.Id, cancellationToken)
             ?? throw new ResourceNotFoundException("Transaction was not found.");
         return Ok(transaction.ToResponse());
     }
 
     /// <summary>Updates only user-owned category, review, and notes metadata.</summary>
-    [HttpPatch("{id:guid}")]
+    /// <param name="transactionId">The application's transactionId returned by GET /api/transactions. This is not PlaidTransactionId.</param>
+    /// <param name="request">The user-editable transaction metadata. Plaid-owned transaction fields cannot be changed.</param>
+    /// <param name="cancellationToken">Canceled when the client disconnects.</param>
+    [HttpPatch("{transactionId:guid}")]
     [ProducesResponseType<TransactionResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<TransactionResponse>> Update(
-        Guid id, UpdateTransactionRequest request, CancellationToken cancellationToken)
+        Guid transactionId, UpdateTransactionRequest request, CancellationToken cancellationToken)
     {
         var user = await currentUserService.GetCurrentUserAsync(cancellationToken);
         var transaction = await dbContext.Transactions.SingleOrDefaultAsync(
-            x => x.Id == id && !x.IsRemoved && x.FinancialAccount.BankConnection.UserId == user.Id, cancellationToken)
+            x => x.Id == transactionId && !x.IsRemoved && x.FinancialAccount.BankConnection.UserId == user.Id, cancellationToken)
             ?? throw new ResourceNotFoundException("Transaction was not found.");
 
         if (request.UserCategoryIdSpecified && request.UserCategoryId.HasValue &&
