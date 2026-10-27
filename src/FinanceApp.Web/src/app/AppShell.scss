@@ -1,0 +1,44 @@
+.app-shell {
+  min-height: 100vh;
+
+  &__sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: 252px;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 18px 20px;
+    background: #123b31;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    z-index: 20;
+  }
+
+  &__overline { margin: 46px 12px 10px !important; color: rgba(255, 255, 255, 0.48); letter-spacing: .14em !important; }
+  &__nav { display: grid; gap: 6px; }
+  &__nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 13px;
+    color: rgba(255, 255, 255, 0.7);
+    border-radius: 999px;
+    text-decoration: none;
+    font-size: .93rem;
+    font-weight: 650;
+    transition: 160ms ease;
+    &:hover { color: white; background: rgba(255, 255, 255, 0.07); }
+    &--active { color: white; background: rgba(255, 255, 255, 0.11); box-shadow: inset 0 0 0 1px rgba(255,255,255,.05); }
+    &--active svg { color: #d9a96c; }
+  }
+
+  &__account { margin-top: auto; display: grid; gap: 18px; }
+  &__main { margin-left: 252px; min-height: 100vh; }
+  &__mobile-header { position: sticky; top: 0; z-index: 20; color: white; background: #123b31; box-shadow: 0 8px 30px rgba(0,0,0,.16); }
+  &__mobile-header .MuiTabs-indicator { background-color: #d9a96c; height: 3px; }
+  &__mobile-header .MuiTab-root { color: rgba(255,255,255,.68); min-width: 108px; }
+  &__mobile-header .Mui-selected { color: white; }
+}
+
+@media (max-width: 899px) {
+  .app-shell__main { margin-left: 0; }
+}

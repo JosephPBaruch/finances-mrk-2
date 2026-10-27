@@ -1,0 +1,8 @@
+.transactions {
+  &__filters { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 14px; margin-bottom: 14px; }
+  &__filters .MuiTextField-root { min-width: 190px; }
+  &__grid { overflow: hidden; }
+  &__amount--income { color: #67b98d; font-weight: 750; }
+  &__amount--expense { color: #ee8c85; font-weight: 720; }
+}
+@media (max-width: 650px) { .transactions__filters .MuiTextField-root { width: 100%; } }

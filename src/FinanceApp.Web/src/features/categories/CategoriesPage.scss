@@ -1,0 +1,13 @@
+.categories {
+  &__intro { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 18px; }
+  &__list { overflow: hidden; }
+  &__list-header, &__row { display: grid; grid-template-columns: minmax(220px, 1.3fr) minmax(190px, .8fr) minmax(240px, 1fr); gap: 18px; align-items: center; padding: 16px 18px; }
+  &__list-header { color: #aab7b1; background: rgba(117,184,159,.06); border-bottom: 1px solid rgba(140,160,152,.2); font-size: .8rem; }
+  &__row + &__row { border-top: 1px solid rgba(140,160,152,.16); }
+  &__dot { display: inline-block; width: 9px; height: 9px; margin-right: 9px; border-radius: 50%; }
+}
+@media (max-width: 760px) {
+  .categories__intro { grid-template-columns: 1fr; }
+  .categories__list-header { display: none; }
+  .categories__row { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,11 @@
+.summary {
+  &__stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 16px; }
+  &__stat { display: flex; align-items: center; gap: 14px; }
+  &__stat-icon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 12px; color: #d9a96c; background: rgba(217,169,108,.1); }
+  &__grid { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(340px, .92fr); gap: 16px; margin-bottom: 16px; }
+  &__chart { min-height: 310px; display: grid; place-items: center; }
+  &__trend { margin-bottom: 16px; }
+  &__connections { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 18px; }
+}
+@media (max-width: 1100px) { .summary__stats { grid-template-columns: repeat(2, 1fr); } .summary__grid { grid-template-columns: 1fr; } }
+@media (max-width: 580px) { .summary__stats { grid-template-columns: 1fr; } .summary__connections { align-items: flex-start; flex-direction: column; } }

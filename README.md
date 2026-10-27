@@ -1,12 +1,10 @@
-# Finance App — Phase 1 Backend
+# Finances — Personal Finance App
 
-Controller-based ASP.NET Core Web API for a personal finance application. Phase 1 provides a SQLite persistence layer, encrypted Plaid Item tokens, Plaid Sandbox onboarding, account retrieval, cursor-based transaction synchronization, transaction review metadata, Swagger UI, tests, and Docker support.
-
-Frontend, budgeting, login, background jobs, and mobile clients are intentionally out of scope.
+Full-stack personal finance and budgeting application. The ASP.NET Core API provides encrypted Plaid Item storage, Sandbox and Link onboarding, account retrieval, cursor-based transaction synchronization, review metadata, and SQLite persistence. The React application adds responsive summaries, transaction review, automatic Plaid category-to-budget-bucket mapping, monthly goals, income planning, charts, and a five-bucket budget.
 
 ## Architecture
 
-The API is one deployable service, split into straightforward layers:
+The backend is split into straightforward layers:
 
 - `Controllers/` — HTTP endpoints and current-user scoping
 - `Services/` — Plaid HTTP client, connection orchestration, encryption, and transaction synchronization
@@ -20,6 +18,8 @@ Every request is scoped through `ICurrentUserService`. `DevelopmentCurrentUserSe
 
 Access tokens are encrypted with AES-256-GCM using a configuration-supplied key. Transaction synchronization collects all Plaid pages before starting one EF transaction. Transaction changes and the final cursor therefore commit atomically. Removed rows are archived with `IsRemoved`/`RemovedAt`, and Plaid updates never replace `UserCategoryId`, `IsReviewed`, or `Notes`.
 
+The frontend lives in `src/FinanceApp.Web`. Backend behavior is isolated behind typed API modules. Budget goals, monthly income overrides, and Plaid-category mapping preferences are currently browser-local because the API does not yet expose persistence endpoints for them.
+
 ## Technology
 
 - .NET 10 / C# / ASP.NET Core controllers
@@ -28,10 +28,15 @@ Access tokens are encrypted with AES-256-GCM using a configuration-supplied key.
 - Swashbuckle Swagger UI in Development only
 - xUnit v3 tests using in-memory SQLite and mocked Plaid behavior
 - Multi-stage Docker image running as the built-in non-root .NET user
+- React 19, Vite, strict TypeScript, Material UI, MUI X Data Grid, Recharts, and SCSS
+- React Plaid Link for institution authentication
+- Vitest, Testing Library, and Playwright desktop/mobile coverage
+- Node 22 Alpine and Nginx Alpine multi-stage frontend image
 
 ## Prerequisites
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- Node.js 22 for local frontend development
 - A [Plaid developer account](https://dashboard.plaid.com/signup) with Sandbox credentials
 - Optional: Docker and Docker Compose
 - Optional: `sqlite3` for inspecting the database
@@ -52,6 +57,8 @@ Store development secrets outside source control:
 dotnet user-secrets --project src/FinanceApp.Api set "Plaid:ClientId" "YOUR_CLIENT_ID"
 dotnet user-secrets --project src/FinanceApp.Api set "Plaid:Secret" "YOUR_SANDBOX_SECRET"
 dotnet user-secrets --project src/FinanceApp.Api set "Plaid:Environment" "sandbox"
+# Required for production OAuth institutions; register this exact URI in Plaid Dashboard.
+dotnet user-secrets --project src/FinanceApp.Api set "Plaid:RedirectUri" "http://localhost:5173/transactions"
 dotnet user-secrets --project src/FinanceApp.Api set "Encryption:Key" "BASE64_KEY_FROM_OPENSSL"
 ```
 
@@ -61,6 +68,7 @@ The same values can be supplied with .NET environment-variable names:
 Plaid__ClientId
 Plaid__Secret
 Plaid__Environment=sandbox
+Plaid__RedirectUri=http://localhost:5173/transactions
 Plaid__Products__0=transactions
 Plaid__CountryCodes__0=US
 Encryption__Key
@@ -99,12 +107,25 @@ dotnet run --project src/FinanceApp.Api -- --urls http://localhost:5000
 
 Open the `/swagger` URL printed by ASP.NET Core (typically `http://localhost:5xxx/swagger`). Swagger is deliberately disabled outside Development.
 
+## Run the frontend locally
+
+With the API running on port 5000:
+
+```bash
+cd src/FinanceApp.Web
+cp .env.example .env.local
+npm install
+npm run dev
+```
+
+Open `http://localhost:5173`. Vite proxies `/api` to `VITE_API_PROXY_TARGET`. Set `VITE_PLAID_CONNECTION_MODE` to `link`, `sandbox`, or `both` to control the available bank-connection choices at build time.
+
 ### Complete Sandbox flow
 
 1. Call `POST /api/plaid/sandbox/connect` with `ins_109508` (Plaid's First Platypus Bank Sandbox institution).
 2. Copy the returned `bankConnectionId`.
 3. Call `GET /api/accounts`.
-4. Call `POST /api/connections/{id}/sync`. Connection creation already performs the required first sync; calling it again retrieves any history Plaid prepared asynchronously.
+4. Call `POST /api/connections/{bankConnectionId}/sync`. Connection creation already performs the required first sync; calling it again retrieves any history Plaid prepared asynchronously.
 5. Call `GET /api/transactions`.
 6. Call `PATCH /api/transactions/{id}` with review metadata.
 7. Query transactions again, for example with `isReviewed=true`.
@@ -142,7 +163,7 @@ No endpoint returns the Plaid access token or encrypted token value.
 
 ## Querying and editing transactions
 
-`GET /api/transactions` accepts `accountId`, `startDate`, `endDate`, `categoryId`, `isReviewed`, `pending`, `page`, and `pageSize` (maximum 200). Archived Plaid removals are excluded. `PATCH /api/transactions/{id}` accepts only `userCategoryId`, `isReviewed`, and `notes`; amount and Plaid identifiers cannot be changed.
+`GET /api/transactions` accepts `accountId`, `startDate`, `endDate`, `categoryId`, `isReviewed`, `pending`, `page`, and `pageSize` (maximum 200). Archived Plaid removals are excluded. `PATCH /api/transactions/{transactionId}` accepts only `userCategoryId`, `isReviewed`, and `notes`; amount and Plaid identifiers cannot be changed.
 
 Category entities and relationships exist, but category-management endpoints are intentionally deferred. Until those are added, category IDs can only be assigned if a category row already exists for the development user.
 
@@ -169,6 +190,12 @@ The `AccessToken` column contains authenticated ciphertext, not plaintext. Treat
 
 ```bash
 dotnet test FinanceApp.slnx
+cd src/FinanceApp.Web
+npm run typecheck
+npm run lint
+npm run test
+npm run build
+npm run test:e2e
 ```
 
 The test suite requires no Plaid credentials and covers safe public-token exchange errors, connection/account persistence, token encryption, initial and incremental sync, pagination, added/modified/removed records, pending-to-posted replacement, user-metadata preservation, cursor persistence, rollback, mutation-during-pagination restart, and duplicate prevention.
@@ -181,6 +208,7 @@ Create an untracked `.env` file or export these variables in your shell:
 PLAID_CLIENT_ID=...
 PLAID_SECRET=...
 PLAID_ENVIRONMENT=sandbox
+PLAID_REDIRECT_URI=http://localhost:8080/transactions
 ENCRYPTION_KEY=BASE64_ENCODED_32_BYTE_KEY
 ```
 
@@ -190,7 +218,7 @@ Then run:
 docker compose up --build
 ```
 
-Swagger is at `http://localhost:8080/swagger`. SQLite is stored in the named `finance-data` volume and survives container recreation. A short-lived Alpine init service assigns the volume directory to UID/GID `1654`, the built-in .NET image application user; the API itself never runs as root. Credentials and the encryption key are injected at runtime and are not copied into the image.
+The application is at `http://localhost:8080` and Swagger is at `http://localhost:8080/swagger`. The gateway is the only publicly exposed service; it routes `/` to the frontend and `/api/` to the backend. SQLite is stored in the named `finance-data` volume and survives container recreation. A short-lived Alpine init service assigns the volume directory to UID/GID `1654`, the built-in .NET image application user; the API itself never runs as root. Credentials and the encryption key are injected at runtime and are not copied into either image.
 
 To reset the Docker database (destructive):
 
@@ -211,6 +239,6 @@ docker compose down -v
 
 Replace `DevelopmentCurrentUserService` with an implementation backed by ASP.NET Core Identity or validated JWT claims, register it as `ICurrentUserService`, and add authorization policies to controllers. Existing queries and services already scope data by the resolved user, so clients will not start passing arbitrary user IDs. Before production, also remove the development user seed through a migration and secure every endpoint, especially token exchange and Link-token creation.
 
-## Future React and iOS clients
+## Frontend and future clients
 
-Clients should request `POST /api/plaid/link-token`, launch the appropriate Plaid Link SDK, and send the resulting public token to `POST /api/plaid/exchange-token`. They should consume only DTOs from this API; Plaid secrets and access tokens remain server-side. CORS, frontend hosting, client authentication, webhook-triggered refresh notifications, and mobile deep-link/OAuth handling belong in later phases.
+The React client requests `POST /api/plaid/link-token`, launches Plaid Link, and sends the resulting public token to `POST /api/plaid/exchange-token`. It consumes only API DTOs; Plaid secrets and access tokens remain server-side. Production authentication, webhook-triggered refresh notifications, durable server-side budget preferences, and mobile deep-link/OAuth handling remain future work.
