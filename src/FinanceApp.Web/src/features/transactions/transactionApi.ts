@@ -1,5 +1,6 @@
 import type { FinanceTransaction, PagedResponse } from "../../shared/api/apiTypes";
 import { apiRequest } from "../../shared/api/http";
+import { normalizeTransaction, normalizeTransactionPage, type TransactionPageWire, type TransactionWire } from "./transactionAdapter";
 
 export type TransactionQuery = {
   accountId?: string;
@@ -20,9 +21,13 @@ function toQueryString(query: TransactionQuery): string {
   return encoded ? `?${encoded}` : "";
 }
 
+async function getPage(query: TransactionQuery = {}): Promise<PagedResponse<FinanceTransaction>> {
+  const page = await apiRequest<TransactionPageWire>(`/transactions${toQueryString(query)}`);
+  return normalizeTransactionPage(page);
+}
+
 export const transactionApi = {
-  getPage: (query: TransactionQuery = {}) =>
-    apiRequest<PagedResponse<FinanceTransaction>>(`/transactions${toQueryString(query)}`),
+  getPage,
 
   async getAll(): Promise<FinanceTransaction[]> {
     const first = await this.getPage({ page: 1, pageSize: 200 });
@@ -36,8 +41,8 @@ export const transactionApi = {
   },
 
   update: (transactionId: string, values: { isReviewed?: boolean; notes?: string | null }) =>
-    apiRequest<FinanceTransaction>(`/transactions/${transactionId}`, {
+    apiRequest<TransactionWire>(`/transactions/${transactionId}`, {
       method: "PATCH",
       body: values,
-    }),
+    }).then(normalizeTransaction),
 };

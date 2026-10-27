@@ -24,3 +24,40 @@ test("budget exposes the core monthly controls", async ({ page }) => {
   await expect(page.getByText("Total outflow vs. income")).toBeVisible();
   await expect(page.getByRole("button", { name: "Save" })).toBeVisible();
 });
+
+test("legacy API transaction identifiers render without a Data Grid error", async ({ page }) => {
+  const pageErrors: string[] = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  await page.route("**/api/transactions**", (route) => route.fulfill({
+    json: {
+      items: [{
+        id: "d85cf52e-3951-4e08-a806-df2f3f54de20",
+        financialAccountId: "9f549322-188a-460d-8729-5c144064ca40",
+        plaidTransactionId: "plaid-transaction",
+        date: "2026-10-26",
+        authorizedDate: null,
+        name: "United Airlines",
+        merchantName: "United Airlines",
+        amount: 500,
+        currencyCode: "USD",
+        pending: false,
+        plaidPrimaryCategory: "TRAVEL",
+        plaidDetailedCategory: "TRAVEL_FLIGHTS",
+        plaidCategoryConfidence: "VERY_HIGH",
+        userCategoryId: null,
+        isReviewed: false,
+        notes: null,
+        updatedAt: "2026-10-27T02:26:40.241599+00:00",
+      }],
+      page: 1,
+      pageSize: 200,
+      totalCount: 1,
+      totalPages: 1,
+    },
+  }));
+
+  await page.goto("/transactions");
+
+  await expect(page.getByText("United Airlines").first()).toBeVisible();
+  expect(pageErrors).toEqual([]);
+});

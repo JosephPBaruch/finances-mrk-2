@@ -1,16 +1,15 @@
 import type {
-  Account,
-  BankConnection,
   ConnectionCreatedResponse,
   LinkTokenResponse,
   SyncAllResponse,
   SyncResponse,
 } from "../../shared/api/apiTypes";
 import { apiRequest } from "../../shared/api/http";
+import { normalizeAccount, normalizeConnection, type AccountWire, type BankConnectionWire } from "./bankingAdapter";
 
 export const bankingApi = {
-  getConnections: () => apiRequest<BankConnection[]>("/connections"),
-  getAccounts: () => apiRequest<Account[]>("/accounts"),
+  getConnections: () => apiRequest<BankConnectionWire[]>("/connections").then((items) => items.map(normalizeConnection)),
+  getAccounts: () => apiRequest<AccountWire[]>("/accounts").then((items) => items.map(normalizeAccount)),
   createLinkToken: () => apiRequest<LinkTokenResponse>("/plaid/link-token", { method: "POST" }),
   exchangePublicToken: (publicToken: string) =>
     apiRequest<ConnectionCreatedResponse>("/plaid/exchange-token", {
