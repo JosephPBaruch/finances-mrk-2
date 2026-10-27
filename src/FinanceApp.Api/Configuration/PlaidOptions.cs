@@ -14,6 +14,7 @@ public sealed class PlaidOptions
 
     public string[] Products { get; init; } = ["transactions"];
     public string[] CountryCodes { get; init; } = ["US"];
+    public string? RedirectUri { get; init; }
 
     public Uri BaseUri => Environment.Equals("production", StringComparison.OrdinalIgnoreCase)
         ? new Uri("https://production.plaid.com/")

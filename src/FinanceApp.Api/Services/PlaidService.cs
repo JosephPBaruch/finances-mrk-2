@@ -19,16 +19,19 @@ public sealed class PlaidService(HttpClient httpClient, IOptions<PlaidOptions> o
     public async Task<PlaidLinkTokenResult> CreateLinkTokenAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         EnsureConfigured();
-        var response = await PostAsync<LinkTokenResponse>("link/token/create", new
+        var request = new Dictionary<string, object?>
         {
-            client_id = _options.ClientId,
-            secret = _options.Secret,
-            client_name = "Finance App",
-            user = new { client_user_id = userId.ToString("D") },
-            products = _options.Products,
-            country_codes = _options.CountryCodes,
-            language = "en"
-        }, cancellationToken);
+            ["client_id"] = _options.ClientId,
+            ["secret"] = _options.Secret,
+            ["client_name"] = "Finances",
+            ["user"] = new { client_user_id = userId.ToString("D") },
+            ["products"] = _options.Products,
+            ["country_codes"] = _options.CountryCodes,
+            ["language"] = "en"
+        };
+        if (!string.IsNullOrWhiteSpace(_options.RedirectUri)) request["redirect_uri"] = _options.RedirectUri;
+
+        var response = await PostAsync<LinkTokenResponse>("link/token/create", request, cancellationToken);
 
         return new PlaidLinkTokenResult(response.LinkToken, response.Expiration);
     }

@@ -9,6 +9,30 @@ namespace FinanceApp.Api.Tests;
 public sealed class PlaidServiceTests
 {
     [Fact]
+    public async Task CreateLinkToken_IncludesConfiguredOAuthRedirectUri()
+    {
+        string? requestJson = null;
+        var handler = new StubHttpMessageHandler(request =>
+        {
+            requestJson = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            return StubHttpMessageHandler.Json("""{"link_token":"link-sandbox-token","expiration":"2026-10-27T12:00:00Z"}""");
+        });
+        var service = new PlaidService(
+            new HttpClient(handler) { BaseAddress = new Uri("https://sandbox.plaid.com/") },
+            Options.Create(new PlaidOptions
+            {
+                ClientId = "client",
+                Secret = "secret",
+                RedirectUri = "https://finances.example.com/transactions"
+            }),
+            NullLogger<PlaidService>.Instance);
+
+        await service.CreateLinkTokenAsync(Guid.NewGuid());
+
+        Assert.Contains("https://finances.example.com/transactions", requestJson);
+    }
+
+    [Fact]
     public async Task ExchangePublicToken_MapsOfficialResponse_WithoutReturningCredentialsElsewhere()
     {
         string? requestJson = null;
