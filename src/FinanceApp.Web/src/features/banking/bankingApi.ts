@@ -28,5 +28,7 @@ export const bankingApi = {
       `/connections/${bankConnectionId}/refresh-accounts`,
       { method: "POST" },
     ),
+  removeConnection: (bankConnectionId: string) =>
+    apiRequest<void>(`/connections/${bankConnectionId}`, { method: "DELETE" }),
   syncAll: () => apiRequest<SyncAllResponse>("/connections/sync-all", { method: "POST" }),
 };

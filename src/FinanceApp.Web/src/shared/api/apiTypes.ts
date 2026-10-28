@@ -49,6 +49,7 @@ export type FinanceTransaction = {
   plaidCategoryConfidence: string | null;
   userCategoryId: string | null;
   userCategoryName: string | null;
+  userCategoryBudgetBucket: string | null;
   isReviewed: boolean;
   notes: string | null;
   updatedAt: string;
@@ -58,6 +59,7 @@ export type UserCategory = {
   categoryId: string;
   name: string;
   description: string | null;
+  budgetBucket: string | null;
 };
 
 export type AuthStatus = {

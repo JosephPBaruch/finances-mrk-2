@@ -3,8 +3,11 @@
   &__total { position: relative; overflow: hidden; }
   &__total::after { content: ""; position: absolute; inset: auto -28px -44px auto; width: 110px; height: 110px; border-radius: 50%; background: color-mix(in srgb, var(--mui-palette-primary-main) 8%, transparent); }
   &__total--liability::after { background: color-mix(in srgb, var(--mui-palette-error-main) 8%, transparent); }
-  &__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-  &__card { min-width: 0; }
+  &__connection { overflow: hidden; }
+  &__connection-header { display: flex; justify-content: space-between; align-items: center; gap: 18px; padding: 18px 20px; background: color-mix(in srgb, var(--mui-palette-primary-main) 6%, transparent); border-bottom: 1px solid var(--mui-palette-divider); }
+  &__institution-icon { width: 42px; height: 42px; flex: 0 0 auto; display: grid; place-items: center; color: var(--mui-palette-secondary-main); background: color-mix(in srgb, var(--mui-palette-secondary-main) 11%, transparent); border-radius: 12px; }
+  &__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; padding: 16px; }
+  &__card { min-width: 0; box-shadow: none !important; }
   &__icon { width: 44px; height: 44px; display: grid; place-items: center; color: var(--mui-palette-primary-main); border-radius: 13px; background: color-mix(in srgb, var(--mui-palette-primary-main) 11%, transparent); }
   &__icon--credit, &__icon--loan { color: var(--mui-palette-error-main); background: color-mix(in srgb, var(--mui-palette-error-main) 10%, transparent); }
   &__icon--investment, &__icon--savings { color: var(--mui-palette-success-main); background: color-mix(in srgb, var(--mui-palette-success-main) 10%, transparent); }
@@ -13,4 +16,4 @@
 }
 
 @media (max-width: 1100px) { .accounts__totals { grid-template-columns: repeat(2, 1fr); } .accounts__grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 640px) { .accounts__totals, .accounts__grid { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .accounts__totals, .accounts__grid { grid-template-columns: 1fr; } .accounts__connection-header { align-items: flex-start; flex-direction: column; } }

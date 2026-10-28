@@ -4,7 +4,8 @@ export type ConfidenceFilter = "all" | "needs-category" | "unreviewed" | "high-c
 
 export function needsCategoryReview(transaction: FinanceTransaction): boolean {
   const confidence = transaction.plaidCategoryConfidence?.toUpperCase();
-  return !transaction.userCategoryId && (!confidence || confidence === "LOW" || confidence === "UNKNOWN");
+  return !transaction.isReviewed && !transaction.userCategoryId
+    && (!confidence || confidence === "LOW" || confidence === "UNKNOWN");
 }
 
 export function matchesConfidenceFilter(transaction: FinanceTransaction, filter: ConfidenceFilter): boolean {

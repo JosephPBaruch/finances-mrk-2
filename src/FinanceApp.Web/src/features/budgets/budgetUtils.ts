@@ -41,8 +41,11 @@ export function resolveBudgetCategory(
   transaction: FinanceTransaction,
   mappings: CategoryMappings,
 ): BudgetCategory | "Excluded" {
-  if (transaction.userCategoryName && BUDGET_CATEGORIES.includes(transaction.userCategoryName as BudgetCategory)) {
-    return transaction.userCategoryName as BudgetCategory;
+  if (transaction.userCategoryId) {
+    if (transaction.userCategoryBudgetBucket && BUDGET_CATEGORIES.includes(transaction.userCategoryBudgetBucket as BudgetCategory)) {
+      return transaction.userCategoryBudgetBucket as BudgetCategory;
+    }
+    return "Excluded";
   }
   const primary = transaction.plaidPrimaryCategory ?? "UNCATEGORIZED";
   return mappings[primary] ?? defaultBudgetCategory(primary, transaction.plaidDetailedCategory);
@@ -56,7 +59,8 @@ export function isInPeriod(date: string, month: number, year: number): boolean {
 export function calculateIncome(transactions: FinanceTransaction[], month: number, year: number): number {
   const income = transactions
     .filter((transaction) => isInPeriod(transaction.date, month, year) && transaction.amount < 0)
-    .filter((transaction) => transaction.plaidPrimaryCategory?.toUpperCase() === "INCOME")
+    .filter((transaction) => transaction.userCategoryName === "Income"
+      || ["INCOME", "TRANSFER_IN"].includes(transaction.plaidPrimaryCategory?.toUpperCase() ?? ""))
     .reduce((total, transaction) => total + Math.abs(transaction.amount), 0);
   return Math.round(income * 100) / 100;
 }

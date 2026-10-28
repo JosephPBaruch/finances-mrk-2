@@ -57,6 +57,18 @@ public sealed class ConnectionsController(
         return Ok(await connectionService.RefreshAccountsAsync(user.Id, bankConnectionId, cancellationToken));
     }
 
+    /// <summary>Disconnects the Plaid Item and permanently removes its local accounts and transactions.</summary>
+    [HttpDelete("{bankConnectionId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status502BadGateway)]
+    public async Task<IActionResult> Remove(Guid bankConnectionId, CancellationToken cancellationToken)
+    {
+        var user = await currentUserService.GetCurrentUserAsync(cancellationToken);
+        await connectionService.RemoveAsync(user.Id, bankConnectionId, cancellationToken);
+        return NoContent();
+    }
+
     /// <summary>Runs cursor-based Plaid transaction synchronization for one connection.</summary>
     /// <param name="bankConnectionId">The application's bankConnectionId returned by a connection-creation endpoint or GET /api/connections. Do not use institutionId, accountId, or PlaidItemId.</param>
     /// <param name="cancellationToken">Canceled when the client disconnects.</param>

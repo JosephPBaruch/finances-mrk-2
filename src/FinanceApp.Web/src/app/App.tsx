@@ -13,7 +13,6 @@ const AccountsPage = lazy(() => import("../features/accounts/AccountsPage"));
 const TransactionsPage = lazy(() => import("../features/transactions/TransactionsPage"));
 const CategoriesPage = lazy(() => import("../features/categories/CategoriesPage"));
 const BudgetPage = lazy(() => import("../features/budgets/BudgetPage"));
-const ProjectionPage = lazy(() => import("../features/projections/ProjectionPage"));
 
 function FinanceWorkspace({ darkMode, onToggleTheme }: { darkMode: boolean; onToggleTheme: () => void }) {
   const { status, loading } = useAuth();
@@ -31,7 +30,6 @@ function FinanceWorkspace({ darkMode, onToggleTheme }: { darkMode: boolean; onTo
                 <Route path="/transactions" element={<TransactionsPage />} />
                 <Route path="/categories" element={<CategoriesPage />} />
                 <Route path="/budget" element={<BudgetPage />} />
-                <Route path="/projection" element={<ProjectionPage />} />
                 <Route path="*" element={<Navigate to="/transactions" replace />} />
               </Route>
             </Routes>

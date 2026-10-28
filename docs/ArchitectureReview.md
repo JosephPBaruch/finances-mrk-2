@@ -20,8 +20,8 @@ The database unique indexes remain the source of truth for duplicate Plaid Items
 - `app/` owns routing, the authenticated shell, theme, and shared finance-data loading.
 - `features/accounts/` owns account classification, balance/net-worth calculations, and account presentation.
 - `features/transactions/` owns transaction transport normalization, confidence rules, review, filtering, and assignment UI.
-- `features/budgets/` owns browser-local monthly planning and Plaid-to-budget mapping.
-- `features/projections/` owns deterministic projection math and its assumptions UI.
+- `features/categories/` owns durable transaction-category-to-budget-bucket mapping.
+- `features/budgets/` owns browser-local monthly planning and budget calculations.
 - `features/auth/` owns the admin session bootstrap and login experience.
 - `shared/api/` owns HTTP error handling and API contracts.
 
@@ -29,10 +29,11 @@ Calculations that are used by more than one screen are pure functions with unit 
 
 ## Intentional constraints
 
-- Budget goals and Plaid-category mapping overrides remain in browser storage. Moving them to the API should be the next persistence change if multiple devices are required.
-- Wealth projection is a planning estimate. It models a constant monthly contribution, constant annual return, and constant inflation; it does not model taxes, fees, volatility, or account-specific withdrawal rules.
+- Budget goals and monthly income overrides remain in browser storage. Moving them to the API should be the next persistence change if multiple devices are required.
+- Transaction categories and their budget-bucket mappings are persisted by the API. Plaid is the default until the admin accepts or corrects a transaction.
 - The app is intentionally single-admin. Supporting multiple users would require replacing the bootstrap flow, adding user lifecycle operations, and reviewing every ownership policy.
 - Plaid `/accounts/get` balances are cached by Plaid. Real-time balance retrieval may require product access and can have usage cost.
+- Disconnecting a connection calls Plaid `/item/remove` before deleting its local accounts and transactions.
 
 ## Verification expectations
 

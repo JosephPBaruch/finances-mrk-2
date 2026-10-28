@@ -1,6 +1,6 @@
 # Finances — Personal Finance App
 
-Full-stack personal finance and budgeting application. The ASP.NET Core API provides single-admin authentication, encrypted Plaid Item storage, Sandbox and Link onboarding, account retrieval, cursor-based transaction synchronization, review metadata, and SQLite persistence. The React application adds account/net-worth overviews, responsive summaries, transaction review, confidence-aware category assignment, monthly goals, income planning, wealth projections, charts, and a five-bucket budget.
+Full-stack personal finance and budgeting application. The ASP.NET Core API provides single-admin authentication, encrypted Plaid Item storage, Sandbox and Link onboarding, account retrieval, connection removal, cursor-based transaction synchronization, category/review metadata, and SQLite persistence. The React application adds grouped account/net-worth overviews, responsive summaries, confidence-aware transaction categorization, monthly goals, income planning, charts, and a five-bucket budget.
 
 ## Architecture
 
@@ -18,7 +18,7 @@ Every protected request is scoped through `ICurrentUserService`. `AuthenticatedC
 
 Access tokens are encrypted with AES-256-GCM using a configuration-supplied key. Transaction synchronization collects all Plaid pages before starting one EF transaction. Transaction changes and the final cursor therefore commit atomically. Removed rows are archived with `IsRemoved`/`RemovedAt`, and Plaid updates never replace `UserCategoryId`, `IsReviewed`, or `Notes`.
 
-The frontend lives in `src/FinanceApp.Web`. Backend behavior is isolated behind typed API modules. Budget goals, monthly income overrides, and Plaid-category mapping preferences are currently browser-local because the API does not yet expose persistence endpoints for them.
+The frontend lives in `src/FinanceApp.Web`. Backend behavior is isolated behind typed API modules. Transaction categories and their budget-bucket mappings are persisted by the API. Budget goals and monthly income overrides remain browser-local.
 
 ## Technology
 
@@ -142,6 +142,7 @@ Open `http://localhost:5173`. Vite proxies `/api` to `VITE_API_PROXY_TARGET`. Se
 5. Call `GET /api/transactions`.
 6. Call `PATCH /api/transactions/{id}` with review metadata.
 7. Query transactions again, for example with `isReviewed=true`.
+8. To disconnect the Item, call `DELETE /api/connections/{bankConnectionId}`. This calls Plaid `/item/remove` before deleting local accounts and transactions.
 
 The Sandbox shortcut returns 404 unless both `ASPNETCORE_ENVIRONMENT=Development` and `Plaid:Environment=sandbox`. It cannot be used in Production.
 
@@ -161,6 +162,8 @@ curl "$BASE_URL/api/transactions?page=1&pageSize=50&pending=false"
 curl -X PATCH "$BASE_URL/api/transactions/TRANSACTION_ID" \
   -H 'Content-Type: application/json' \
   -d '{"isReviewed":true,"notes":"Reviewed in Swagger"}'
+
+curl -X DELETE "$BASE_URL/api/connections/CONNECTION_ID"
 ```
 
 For a Link-created public token, use:
@@ -178,7 +181,7 @@ No endpoint returns the Plaid access token or encrypted token value.
 
 `GET /api/transactions` accepts `accountId`, `startDate`, `endDate`, `categoryId`, `isReviewed`, `pending`, `page`, and `pageSize` (maximum 200). Archived Plaid removals are excluded. `PATCH /api/transactions/{transactionId}` accepts only `userCategoryId`, `isReviewed`, and `notes`; amount and Plaid identifiers cannot be changed.
 
-Category entities and relationships exist, but category-management endpoints are intentionally deferred. Until those are added, category IDs can only be assigned if a category row already exists for the development user.
+`GET /api/categories` returns real transaction categories such as Groceries, Housing, Dining, and Income. `PATCH /api/categories/{categoryId}` changes the category's `budgetBucket`; a null bucket excludes it from spending. Assigning `userCategoryId` corrects a transaction without changing Plaid-owned fields. Accepting Plaid sets `isReviewed=true` while leaving `userCategoryId` null. Plaid `INCOME` and `TRANSFER_IN` transactions default to the Income category and feed monthly income.
 
 ## Inspecting SQLite
 
@@ -211,7 +214,7 @@ npm run build
 npm run test:e2e
 ```
 
-The test suite requires no Plaid credentials and covers safe public-token exchange errors, connection/account persistence, token encryption, initial and incremental sync, pagination, added/modified/removed records, pending-to-posted replacement, user-metadata preservation, cursor persistence, rollback, mutation-during-pagination restart, and duplicate prevention.
+The test suite requires no Plaid credentials and covers safe public-token exchange errors, connection/account persistence and removal, token encryption, initial and incremental sync, income categorization, pagination, added/modified/removed records, pending-to-posted replacement, user-metadata preservation, cursor persistence, rollback, mutation-during-pagination restart, and duplicate prevention.
 
 ## Docker
 
@@ -246,7 +249,8 @@ docker compose down -v
 - `refresh-accounts` uses free `/accounts/get`, whose balances are cached as of Plaid's last Item update. Real-time `/accounts/balance/get` may have separate product access and usage billing, so Phase 1 does not call it. See the [Accounts API](https://plaid.com/docs/api/accounts/).
 - `ins_109508` is a Sandbox-only test institution and does not imply that a similarly named production institution will work. See [Plaid Sandbox institutions](https://plaid.com/docs/sandbox/institutions/).
 - Transaction amounts preserve Plaid's sign convention. The API does not infer income from sign.
-- No webhook endpoint, automatic scheduler, delete/disconnect endpoint, key rotation, or production re-authentication Link flow is included yet.
+- `DELETE /api/connections/{id}` calls Plaid `/item/remove`, which invalidates the access token and ends applicable subscription billing, then permanently deletes that connection's local accounts and transactions. Some OAuth institutions may still display the old permission in their own permission manager.
+- No webhook endpoint, automatic scheduler, key rotation, or production re-authentication Link flow is included yet.
 
 ## Frontend and future clients
 

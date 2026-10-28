@@ -81,6 +81,7 @@ internal sealed class FakePlaidService : IPlaidService
     public PlaidAccountsResult AccountsResult { get; set; } = new("ins_1", "Test Bank", []);
     public int SyncCallCount { get; private set; }
     public List<string?> RequestedCursors { get; } = [];
+    public List<string> RemovedAccessTokens { get; } = [];
 
     public Task<PlaidLinkTokenResult> CreateLinkTokenAsync(Guid userId, CancellationToken cancellationToken = default) =>
         Task.FromResult(new PlaidLinkTokenResult("link", DateTimeOffset.UtcNow.AddHours(4)));
@@ -97,6 +98,11 @@ internal sealed class FakePlaidService : IPlaidService
         var result = SyncResults.Dequeue();
         if (result is Exception exception) return Task.FromException<PlaidSyncPage>(exception);
         return Task.FromResult((PlaidSyncPage)result);
+    }
+    public Task RemoveItemAsync(string accessToken, CancellationToken cancellationToken = default)
+    {
+        RemovedAccessTokens.Add(accessToken);
+        return Task.CompletedTask;
     }
 }
 
@@ -117,7 +123,7 @@ internal static class TestFactories
         new(context, plaid, TestDatabase.Encryption, NullLogger<TransactionSyncService>.Instance);
 
     public static PlaidTransaction Transaction(string id, string accountId = "account-1", bool pending = false,
-        string? pendingId = null, decimal amount = 12.34m, string name = "Coffee") =>
+        string? pendingId = null, decimal amount = 12.34m, string name = "Coffee", string primaryCategory = "FOOD_AND_DRINK") =>
         new(id, accountId, pendingId, new DateOnly(2026, 10, 1), null, name, "Merchant", amount, "USD", pending,
-            "FOOD_AND_DRINK", "FOOD_AND_DRINK_COFFEE", "VERY_HIGH");
+            primaryCategory, "FOOD_AND_DRINK_COFFEE", "VERY_HIGH");
 }

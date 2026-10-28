@@ -7,6 +7,7 @@ public interface IPlaidService
     Task<string> CreateSandboxPublicTokenAsync(string institutionId, CancellationToken cancellationToken = default);
     Task<PlaidAccountsResult> GetAccountsAsync(string accessToken, CancellationToken cancellationToken = default);
     Task<PlaidSyncPage> SyncTransactionsAsync(string accessToken, string? cursor, CancellationToken cancellationToken = default);
+    Task RemoveItemAsync(string accessToken, CancellationToken cancellationToken = default);
 }
 
 public sealed record PlaidLinkTokenResult(string LinkToken, DateTimeOffset Expiration);

@@ -88,16 +88,20 @@ public sealed class FinanceDbContext(DbContextOptions<FinanceDbContext> options)
             entity.HasKey(x => x.Id);
             entity.Property(x => x.Name).HasMaxLength(200).IsRequired();
             entity.Property(x => x.Description).HasMaxLength(1000);
+            entity.Property(x => x.BudgetBucket).HasMaxLength(100);
             entity.HasIndex(x => new { x.UserId, x.Name }).IsUnique();
             entity.HasOne(x => x.User).WithMany(x => x.Categories)
                 .HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
             var createdAt = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
-            entity.HasData(
-                new { Id = Guid.Parse("b72c15e4-f0f0-4bd4-9ca1-b2cf8d989001"), UserId = DevelopmentUserDefaults.Id, Name = "Fixed Necessities", Description = "Default personal-finance budget category", CreatedAt = createdAt },
-                new { Id = Guid.Parse("b72c15e4-f0f0-4bd4-9ca1-b2cf8d989002"), UserId = DevelopmentUserDefaults.Id, Name = "Variable Necessities", Description = "Default personal-finance budget category", CreatedAt = createdAt },
-                new { Id = Guid.Parse("b72c15e4-f0f0-4bd4-9ca1-b2cf8d989003"), UserId = DevelopmentUserDefaults.Id, Name = "Savings & Investing", Description = "Default personal-finance budget category", CreatedAt = createdAt },
-                new { Id = Guid.Parse("b72c15e4-f0f0-4bd4-9ca1-b2cf8d989004"), UserId = DevelopmentUserDefaults.Id, Name = "Lifestyle & Fun", Description = "Default personal-finance budget category", CreatedAt = createdAt },
-                new { Id = Guid.Parse("b72c15e4-f0f0-4bd4-9ca1-b2cf8d989005"), UserId = DevelopmentUserDefaults.Id, Name = "Irregular & Sinking Funds", Description = "Default personal-finance budget category", CreatedAt = createdAt });
+            entity.HasData(DefaultCategories.All.Select(category => new
+            {
+                category.Id,
+                UserId = DevelopmentUserDefaults.Id,
+                category.Name,
+                category.Description,
+                category.BudgetBucket,
+                CreatedAt = createdAt
+            }));
         });
     }
 }

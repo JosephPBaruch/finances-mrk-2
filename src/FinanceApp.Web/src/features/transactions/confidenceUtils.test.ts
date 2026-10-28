@@ -6,7 +6,7 @@ const transaction = (confidence: string | null, userCategoryId: string | null = 
   transactionId: "transaction", accountId: "account", plaidTransactionId: "plaid", date: "2026-10-27",
   authorizedDate: null, name: "Coffee", merchantName: null, amount: 4, currencyCode: "USD", pending: false,
   plaidPrimaryCategory: "FOOD_AND_DRINK", plaidDetailedCategory: null, plaidCategoryConfidence: confidence,
-  userCategoryId, userCategoryName: null, isReviewed: false, notes: null, updatedAt: "2026-10-27T00:00:00Z",
+  userCategoryId, userCategoryName: null, userCategoryBudgetBucket: null, isReviewed: false, notes: null, updatedAt: "2026-10-27T00:00:00Z",
 }) satisfies FinanceTransaction;
 
 describe("needsCategoryReview", () => {
@@ -15,5 +15,9 @@ describe("needsCategoryReview", () => {
     expect(needsCategoryReview(transaction(null))).toBe(true);
     expect(needsCategoryReview(transaction("LOW", "category"))).toBe(false);
     expect(needsCategoryReview(transaction("VERY_HIGH"))).toBe(false);
+  });
+
+  it("stops flagging a low-confidence Plaid category after it is accepted", () => {
+    expect(needsCategoryReview({ ...transaction("LOW"), isReviewed: true })).toBe(false);
   });
 });

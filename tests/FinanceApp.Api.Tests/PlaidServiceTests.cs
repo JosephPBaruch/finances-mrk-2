@@ -66,4 +66,24 @@ public sealed class PlaidServiceTests
         Assert.Equal("INVALID_PUBLIC_TOKEN", exception.ErrorCode);
         Assert.DoesNotContain("sensitive", exception.Message);
     }
+
+    [Fact]
+    public async Task RemoveItem_CallsPlaidItemRemoveWithAccessToken()
+    {
+        string? requestPath = null;
+        string? requestJson = null;
+        var handler = new StubHttpMessageHandler(request =>
+        {
+            requestPath = request.RequestUri?.AbsolutePath;
+            requestJson = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            return StubHttpMessageHandler.Json("""{"request_id":"remove-request"}""");
+        });
+        var service = new PlaidService(new HttpClient(handler) { BaseAddress = new Uri("https://sandbox.plaid.com/") },
+            Options.Create(new PlaidOptions { ClientId = "client", Secret = "secret" }), NullLogger<PlaidService>.Instance);
+
+        await service.RemoveItemAsync("access-to-remove");
+
+        Assert.Equal("/item/remove", requestPath);
+        Assert.Contains("access-to-remove", requestJson);
+    }
 }

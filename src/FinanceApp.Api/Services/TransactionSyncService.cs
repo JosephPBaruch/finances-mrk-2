@@ -181,6 +181,9 @@ public sealed class TransactionSyncService(
         target.PlaidPrimaryCategory = source.PrimaryCategory;
         target.PlaidDetailedCategory = source.DetailedCategory;
         target.PlaidCategoryConfidence = source.CategoryConfidence;
+        if (target.UserCategoryId is null &&
+            source.PrimaryCategory?.ToUpperInvariant() is "INCOME" or "TRANSFER_IN")
+            target.UserCategoryId = DefaultCategories.IncomeId;
         target.IsRemoved = false;
         target.RemovedAt = null;
         target.UpdatedAt = now;

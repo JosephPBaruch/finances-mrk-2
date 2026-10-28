@@ -19,6 +19,7 @@ public sealed record TransactionResponse(
     string? PlaidCategoryConfidence,
     Guid? UserCategoryId,
     string? UserCategoryName,
+    string? UserCategoryBudgetBucket,
     bool IsReviewed,
     string? Notes,
     DateTimeOffset UpdatedAt);

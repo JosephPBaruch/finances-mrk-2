@@ -74,6 +74,10 @@ namespace FinanceApp.Api.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("BudgetBucket")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("TEXT");
 
@@ -99,42 +103,171 @@ namespace FinanceApp.Api.Data.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("b72c15e4-f0f0-4bd4-9ca1-b2cf8d989001"),
+                            Id = new Guid("c72c15e4-f0f0-4bd4-9ca1-b2cf8d989001"),
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            Description = "Default personal-finance budget category",
-                            Name = "Fixed Necessities",
+                            Description = "Paychecks, deposits, and incoming transfers",
+                            Name = "Income",
                             UserId = new Guid("79dce62a-54f4-43d7-9b4c-a99866858727")
                         },
                         new
                         {
-                            Id = new Guid("b72c15e4-f0f0-4bd4-9ca1-b2cf8d989002"),
+                            Id = new Guid("c72c15e4-f0f0-4bd4-9ca1-b2cf8d989002"),
+                            BudgetBucket = "Fixed Necessities",
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            Description = "Default personal-finance budget category",
-                            Name = "Variable Necessities",
+                            Description = "Rent, mortgage, and housing costs",
+                            Name = "Housing",
                             UserId = new Guid("79dce62a-54f4-43d7-9b4c-a99866858727")
                         },
                         new
                         {
-                            Id = new Guid("b72c15e4-f0f0-4bd4-9ca1-b2cf8d989003"),
+                            Id = new Guid("c72c15e4-f0f0-4bd4-9ca1-b2cf8d989003"),
+                            BudgetBucket = "Fixed Necessities",
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            Description = "Default personal-finance budget category",
-                            Name = "Savings & Investing",
+                            Description = "Power, water, phone, and internet",
+                            Name = "Utilities",
                             UserId = new Guid("79dce62a-54f4-43d7-9b4c-a99866858727")
                         },
                         new
                         {
-                            Id = new Guid("b72c15e4-f0f0-4bd4-9ca1-b2cf8d989004"),
+                            Id = new Guid("c72c15e4-f0f0-4bd4-9ca1-b2cf8d989004"),
+                            BudgetBucket = "Variable Necessities",
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            Description = "Default personal-finance budget category",
-                            Name = "Lifestyle & Fun",
+                            Description = "Food and household essentials",
+                            Name = "Groceries",
                             UserId = new Guid("79dce62a-54f4-43d7-9b4c-a99866858727")
                         },
                         new
                         {
-                            Id = new Guid("b72c15e4-f0f0-4bd4-9ca1-b2cf8d989005"),
+                            Id = new Guid("c72c15e4-f0f0-4bd4-9ca1-b2cf8d989005"),
+                            BudgetBucket = "Lifestyle & Fun",
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            Description = "Default personal-finance budget category",
-                            Name = "Irregular & Sinking Funds",
+                            Description = "Restaurants, coffee, and takeout",
+                            Name = "Dining",
+                            UserId = new Guid("79dce62a-54f4-43d7-9b4c-a99866858727")
+                        },
+                        new
+                        {
+                            Id = new Guid("c72c15e4-f0f0-4bd4-9ca1-b2cf8d989006"),
+                            BudgetBucket = "Variable Necessities",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Fuel, transit, rideshare, and vehicle costs",
+                            Name = "Transportation",
+                            UserId = new Guid("79dce62a-54f4-43d7-9b4c-a99866858727")
+                        },
+                        new
+                        {
+                            Id = new Guid("c72c15e4-f0f0-4bd4-9ca1-b2cf8d989007"),
+                            BudgetBucket = "Variable Necessities",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Healthcare, pharmacy, and insurance costs",
+                            Name = "Medical",
+                            UserId = new Guid("79dce62a-54f4-43d7-9b4c-a99866858727")
+                        },
+                        new
+                        {
+                            Id = new Guid("c72c15e4-f0f0-4bd4-9ca1-b2cf8d989008"),
+                            BudgetBucket = "Fixed Necessities",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Loan and credit payments",
+                            Name = "Debt Payments",
+                            UserId = new Guid("79dce62a-54f4-43d7-9b4c-a99866858727")
+                        },
+                        new
+                        {
+                            Id = new Guid("c72c15e4-f0f0-4bd4-9ca1-b2cf8d989009"),
+                            BudgetBucket = "Lifestyle & Fun",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Retail and discretionary purchases",
+                            Name = "Shopping",
+                            UserId = new Guid("79dce62a-54f4-43d7-9b4c-a99866858727")
+                        },
+                        new
+                        {
+                            Id = new Guid("c72c15e4-f0f0-4bd4-9ca1-b2cf8d989010"),
+                            BudgetBucket = "Lifestyle & Fun",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Streaming, events, games, and recreation",
+                            Name = "Entertainment",
+                            UserId = new Guid("79dce62a-54f4-43d7-9b4c-a99866858727")
+                        },
+                        new
+                        {
+                            Id = new Guid("c72c15e4-f0f0-4bd4-9ca1-b2cf8d989011"),
+                            BudgetBucket = "Irregular & Sinking Funds",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Flights, lodging, and travel costs",
+                            Name = "Travel",
+                            UserId = new Guid("79dce62a-54f4-43d7-9b4c-a99866858727")
+                        },
+                        new
+                        {
+                            Id = new Guid("c72c15e4-f0f0-4bd4-9ca1-b2cf8d989012"),
+                            BudgetBucket = "Lifestyle & Fun",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Personal services and care",
+                            Name = "Personal Care",
+                            UserId = new Guid("79dce62a-54f4-43d7-9b4c-a99866858727")
+                        },
+                        new
+                        {
+                            Id = new Guid("c72c15e4-f0f0-4bd4-9ca1-b2cf8d989013"),
+                            BudgetBucket = "Variable Necessities",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Tuition, books, and education costs",
+                            Name = "Education",
+                            UserId = new Guid("79dce62a-54f4-43d7-9b4c-a99866858727")
+                        },
+                        new
+                        {
+                            Id = new Guid("c72c15e4-f0f0-4bd4-9ca1-b2cf8d989014"),
+                            BudgetBucket = "Savings & Investing",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Savings contributions and reserves",
+                            Name = "Savings",
+                            UserId = new Guid("79dce62a-54f4-43d7-9b4c-a99866858727")
+                        },
+                        new
+                        {
+                            Id = new Guid("c72c15e4-f0f0-4bd4-9ca1-b2cf8d989015"),
+                            BudgetBucket = "Savings & Investing",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Brokerage and retirement contributions",
+                            Name = "Investments",
+                            UserId = new Guid("79dce62a-54f4-43d7-9b4c-a99866858727")
+                        },
+                        new
+                        {
+                            Id = new Guid("c72c15e4-f0f0-4bd4-9ca1-b2cf8d989016"),
+                            BudgetBucket = "Irregular & Sinking Funds",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Bank and service fees",
+                            Name = "Fees",
+                            UserId = new Guid("79dce62a-54f4-43d7-9b4c-a99866858727")
+                        },
+                        new
+                        {
+                            Id = new Guid("c72c15e4-f0f0-4bd4-9ca1-b2cf8d989017"),
+                            BudgetBucket = "Irregular & Sinking Funds",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Gifts, charity, and donations",
+                            Name = "Gifts & Donations",
+                            UserId = new Guid("79dce62a-54f4-43d7-9b4c-a99866858727")
+                        },
+                        new
+                        {
+                            Id = new Guid("c72c15e4-f0f0-4bd4-9ca1-b2cf8d989018"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Transfers that should not count as spending",
+                            Name = "Transfers",
+                            UserId = new Guid("79dce62a-54f4-43d7-9b4c-a99866858727")
+                        },
+                        new
+                        {
+                            Id = new Guid("c72c15e4-f0f0-4bd4-9ca1-b2cf8d989019"),
+                            BudgetBucket = "Lifestyle & Fun",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Transactions that do not fit another category",
+                            Name = "Other",
                             UserId = new Guid("79dce62a-54f4-43d7-9b4c-a99866858727")
                         });
                 });

@@ -97,6 +97,12 @@ public sealed class PlaidService(HttpClient httpClient, IOptions<PlaidOptions> o
             response.Removed.Select(x => x.TransactionId).ToArray(), response.NextCursor, response.HasMore);
     }
 
+    public async Task RemoveItemAsync(string accessToken, CancellationToken cancellationToken = default)
+    {
+        EnsureConfigured();
+        await PostAsync<ItemRemoveResponse>("item/remove", AuthenticatedRequest(accessToken), cancellationToken);
+    }
+
     private object AuthenticatedRequest(string accessToken) => new
     {
         client_id = _options.ClientId,
@@ -162,5 +168,6 @@ public sealed class PlaidService(HttpClient httpClient, IOptions<PlaidOptions> o
         string? IsoCurrencyCode, string? UnofficialCurrencyCode, bool Pending, PersonalFinanceCategoryData? PersonalFinanceCategory);
     private sealed record PersonalFinanceCategoryData(string? Primary, string? Detailed, string? ConfidenceLevel);
     private sealed record RemovedData(string TransactionId);
+    private sealed record ItemRemoveResponse(string RequestId);
     private sealed record PlaidErrorResponse(string? ErrorType, string? ErrorCode, string? ErrorMessage, string? RequestId);
 }

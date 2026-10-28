@@ -90,6 +90,25 @@ public sealed class BankConnectionService(
         return new AccountRefreshResponse(connection.Id, connection.Accounts.Count, now);
     }
 
+    public async Task RemoveAsync(Guid userId, Guid connectionId, CancellationToken cancellationToken = default)
+    {
+        var connection = await dbContext.BankConnections
+            .SingleOrDefaultAsync(x => x.Id == connectionId && x.UserId == userId, cancellationToken)
+            ?? throw new ResourceNotFoundException("Bank connection was not found.");
+
+        try
+        {
+            await plaidService.RemoveItemAsync(encryptionService.Decrypt(connection.AccessToken), cancellationToken);
+        }
+        catch (PlaidApiException exception) when (exception.ErrorCode == "ITEM_NOT_FOUND")
+        {
+            logger.LogInformation("Plaid Item for connection {ConnectionId} was already removed", connectionId);
+        }
+
+        dbContext.BankConnections.Remove(connection);
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
     private static FinancialAccount MapAccount(PlaidAccount account, DateTimeOffset now) => new()
     {
         Id = Guid.NewGuid(),

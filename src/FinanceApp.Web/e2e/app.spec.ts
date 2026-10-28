@@ -12,7 +12,7 @@ test.beforeEach(async ({ page }) => {
   await emptyApi(page);
 });
 
-for (const [path, heading] of [["/summary", "Summary"], ["/accounts", "Accounts"], ["/transactions", "Transactions"], ["/categories", "Categories"], ["/budget", "Budget"], ["/projection", "Wealth projection"]] as const) {
+for (const [path, heading] of [["/summary", "Summary"], ["/accounts", "Accounts"], ["/transactions", "Transactions"], ["/categories", "Categories"], ["/budget", "Budget"]] as const) {
   test(`${heading} route renders`, async ({ page }) => {
     await page.goto(path);
     await expect(page.getByRole("heading", { name: heading, level: 1 })).toBeVisible();
@@ -39,6 +39,59 @@ test("first run requires the admin to create a password", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Secure my account" })).toBeVisible();
 });
 
+test("desktop navigation uses the compact MUI drawer styling", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "chromium", "Desktop-only drawer assertion");
+  await page.goto("/summary");
+
+  const drawer = page.locator(".MuiDrawer-paper");
+  await expect(drawer).toBeVisible();
+  expect((await drawer.boundingBox())?.width).toBeLessThanOrEqual(265);
+  const summaryLink = page.getByRole("link", { name: "Summary" });
+  await expect(summaryLink).toHaveCSS("text-decoration-line", "none");
+  await expect(summaryLink).not.toHaveCSS("color", "rgb(0, 0, 238)");
+  await expect(page.getByRole("link", { name: "Budget" })).toBeVisible();
+});
+
+test("mobile tabs keep explicit selected colors", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "mobile", "Mobile-only tab assertion");
+  await page.goto("/summary");
+  await expect(page.getByRole("tab", { name: "Summary" })).toHaveCSS("color", "rgb(255, 255, 255)");
+  await expect(page.getByRole("tab", { name: "Accounts" })).not.toHaveCSS("color", "rgb(0, 0, 238)");
+});
+
+test("accounts are grouped by connection and disconnection requires confirmation", async ({ page }) => {
+  let connected = true;
+  const account = {
+    accountId: "account-1", bankConnectionId: "connection-1", name: "Primary Checking", officialName: null,
+    type: "depository", subtype: "checking", mask: "1234", currentBalance: 1250, availableBalance: 1200,
+    currencyCode: "USD", updatedAt: "2026-10-27T00:00:00Z",
+  };
+  const connection = {
+    bankConnectionId: "connection-1", institutionId: "ins_1", institutionName: "Test Credit Union", status: "Active",
+    lastSuccessfulSyncAt: null, createdAt: "2026-10-27T00:00:00Z", updatedAt: "2026-10-27T00:00:00Z", accounts: [account],
+  };
+  await page.unroute("**/api/connections");
+  await page.unroute("**/api/accounts");
+  await page.route("**/api/connections/connection-1", async (route) => {
+    if (route.request().method() === "DELETE") {
+      connected = false;
+      await route.fulfill({ status: 204 });
+      return;
+    }
+    await route.fallback();
+  });
+  await page.route("**/api/connections", (route) => route.fulfill({ json: connected ? [connection] : [] }));
+  await page.route("**/api/accounts", (route) => route.fulfill({ json: connected ? [account] : [] }));
+
+  await page.goto("/accounts");
+  await expect(page.getByText("Test Credit Union").first()).toBeVisible();
+  await expect(page.getByText("Primary Checking")).toBeVisible();
+  await page.getByRole("button", { name: "Disconnect" }).click();
+  await expect(page.getByRole("dialog")).toContainText("cannot be undone");
+  await page.getByRole("button", { name: "Disconnect and delete" }).click();
+  await expect(page.getByText("Test Credit Union")).toHaveCount(0);
+});
+
 test("legacy API transaction identifiers render without a Data Grid error", async ({ page }) => {
   const pageErrors: string[] = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
@@ -60,6 +113,7 @@ test("legacy API transaction identifiers render without a Data Grid error", asyn
         plaidCategoryConfidence: "VERY_HIGH",
         userCategoryId: null,
         userCategoryName: null,
+        userCategoryBudgetBucket: null,
         isReviewed: false,
         notes: null,
         updatedAt: "2026-10-27T02:26:40.241599+00:00",

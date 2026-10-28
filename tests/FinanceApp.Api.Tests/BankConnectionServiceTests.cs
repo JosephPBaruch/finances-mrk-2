@@ -46,4 +46,20 @@ public sealed class BankConnectionServiceTests
         await Assert.ThrowsAsync<DuplicateConnectionException>(() =>
             service.ExchangeAndCreateAsync(seeded.User.Id, "public-token"));
     }
+
+    [Fact]
+    public async Task Remove_DisconnectsPlaidBeforeDeletingLocalConnection()
+    {
+        await using var database = await TestDatabase.CreateAsync();
+        var seeded = await database.SeedConnectionAsync();
+        var plaid = new FakePlaidService();
+        var service = new BankConnectionService(database.Context, plaid, TestDatabase.Encryption,
+            TestFactories.Synchronizer(database.Context, plaid), NullLogger<BankConnectionService>.Instance);
+
+        await service.RemoveAsync(seeded.User.Id, seeded.Connection.Id);
+
+        Assert.Equal(["access-test"], plaid.RemovedAccessTokens);
+        Assert.Empty(await database.Context.BankConnections.ToArrayAsync());
+        Assert.Empty(await database.Context.FinancialAccounts.ToArrayAsync());
+    }
 }

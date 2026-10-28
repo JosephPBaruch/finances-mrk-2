@@ -1,6 +1,7 @@
 import RefreshRounded from "@mui/icons-material/RefreshRounded";
 import SearchRounded from "@mui/icons-material/SearchRounded";
 import WarningAmberRounded from "@mui/icons-material/WarningAmberRounded";
+import CheckRounded from "@mui/icons-material/CheckRounded";
 import {
   Alert,
   Box,
@@ -56,12 +57,15 @@ export default function TransactionsPage() {
       && matchesConfidenceFilter(transaction, confidenceFilter);
   }), [accountId, accountsById, confidenceFilter, pending, search, transactions]);
 
-  const toggleReviewed = async (transaction: FinanceTransaction) => {
+  const acceptPlaidCategory = async (transaction: FinanceTransaction) => {
+    setUpdatingId(transaction.transactionId);
     try {
-      await transactionApi.update(transaction.transactionId, { isReviewed: !transaction.isReviewed });
+      await transactionApi.update(transaction.transactionId, { userCategoryId: null, isReviewed: true });
       await refresh();
     } catch (requestError) {
       notify(requestError instanceof Error ? requestError.message : "Unable to update the transaction.", "error");
+    } finally {
+      setUpdatingId(null);
     }
   };
 
@@ -111,7 +115,7 @@ export default function TransactionsPage() {
           onClick={(event) => event.stopPropagation()}
           onChange={(event) => void assignCategory(row, event.target.value)}
         >
-          <MenuItem value="">Plaid: {(row.plaidPrimaryCategory ?? "Uncategorized").replaceAll("_", " ")}</MenuItem>
+          <MenuItem value="">Use Plaid: {(row.plaidPrimaryCategory ?? "Uncategorized").replaceAll("_", " ")}</MenuItem>
           {categories.map((category) => <MenuItem key={category.categoryId} value={category.categoryId}>{category.name}</MenuItem>)}
         </TextField>
       ),
@@ -120,14 +124,25 @@ export default function TransactionsPage() {
       field: "plaidCategoryConfidence",
       headerName: "Confidence",
       width: 135,
-      renderCell: ({ row }) => needsCategoryReview(row)
-        ? <Chip size="small" color="warning" icon={<WarningAmberRounded />} label="Needs review" />
-        : <Chip size="small" variant="outlined" color="success" label={(row.plaidCategoryConfidence ?? "Assigned").replaceAll("_", " ")} />,
+      renderCell: ({ row }) => {
+        if (needsCategoryReview(row)) return <Chip size="small" color="warning" icon={<WarningAmberRounded />} label="Needs review" />;
+        if (row.userCategoryId) return <Chip size="small" color="success" variant="outlined" label="Corrected" />;
+        if (row.isReviewed) return <Chip size="small" color="success" variant="outlined" label="Plaid accepted" />;
+        return <Chip size="small" variant="outlined" label={(row.plaidCategoryConfidence ?? "Unknown").replaceAll("_", " ")} />;
+      },
     },
     { field: "budgetBucket", headerName: "Budget Bucket", flex: 1, minWidth: 190, valueGetter: (_value, row) => resolveBudgetCategory(row, mappings) },
     { field: "pending", headerName: "Status", width: 105, renderCell: ({ value }) => <Chip size="small" variant="outlined" color={value ? "warning" : "success"} label={value ? "Pending" : "Posted"} /> },
     { field: "amount", headerName: "Amount", width: 125, align: "right", headerAlign: "right", renderCell: ({ value }) => <span className={Number(value) < 0 ? "transactions__amount--income" : "transactions__amount--expense"}>{formatCurrency(Number(value), Number(value) < 0)}</span> },
-    { field: "isReviewed", headerName: "Review", width: 110, sortable: false, renderCell: ({ row }) => <Button size="small" color={row.isReviewed ? "success" : "inherit"} onClick={() => void toggleReviewed(row)}>{row.isReviewed ? "Reviewed" : "Mark"}</Button> },
+    {
+      field: "isReviewed",
+      headerName: "Review",
+      width: 145,
+      sortable: false,
+      renderCell: ({ row }) => row.isReviewed || row.userCategoryId
+        ? <Typography variant="caption" color="text.secondary">{row.userCategoryId ? "Corrected" : "Accepted"}</Typography>
+        : <Button size="small" startIcon={<CheckRounded />} disabled={updatingId === row.transactionId} onClick={() => void acceptPlaidCategory(row)}>Accept Plaid</Button>,
+    },
   ];
 
   const syncAll = async () => {

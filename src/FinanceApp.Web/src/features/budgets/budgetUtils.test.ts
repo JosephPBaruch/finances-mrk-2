@@ -3,6 +3,7 @@ import type { FinanceTransaction } from "../../shared/api/apiTypes";
 import { EMPTY_BUDGET_VALUES } from "./budgetConstants";
 import {
   calculateActuals,
+  calculateIncome,
   isInPeriod,
   previousPeriod,
   recommendationStatus,
@@ -26,6 +27,7 @@ const transaction = (overrides: Partial<FinanceTransaction>): FinanceTransaction
   plaidCategoryConfidence: "HIGH",
   userCategoryId: null,
   userCategoryName: null,
+  userCategoryBudgetBucket: null,
   isReviewed: false,
   notes: null,
   updatedAt: "2026-10-10T00:00:00Z",
@@ -67,10 +69,18 @@ describe("budget utilities", () => {
 
   it("prefers a transaction-level assigned category over the Plaid mapping", () => {
     const actuals = calculateActuals([
-      transaction({ userCategoryId: "category", userCategoryName: "Savings & Investing" }),
+      transaction({ userCategoryId: "category", userCategoryName: "Investments", userCategoryBudgetBucket: "Savings & Investing" }),
     ], 10, 2026, { FOOD_AND_DRINK: "Lifestyle & Fun" });
     expect(actuals["Savings & Investing"]).toBe(25);
     expect(actuals["Lifestyle & Fun"]).toBe(0);
+  });
+
+  it("counts Plaid transfer-ins and assigned Income transactions as monthly income", () => {
+    const transactions = [
+      transaction({ amount: -500, plaidPrimaryCategory: "TRANSFER_IN" }),
+      transaction({ transactionId: "income-2", amount: -250, plaidPrimaryCategory: "OTHER", userCategoryId: "income", userCategoryName: "Income" }),
+    ];
+    expect(calculateIncome(transactions, 10, 2026)).toBe(750);
   });
 
   it("formats relative save times", () => {

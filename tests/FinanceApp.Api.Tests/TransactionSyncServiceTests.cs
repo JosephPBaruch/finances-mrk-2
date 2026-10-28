@@ -1,5 +1,6 @@
 using FinanceApp.Api.Models;
 using FinanceApp.Api.Services;
+using FinanceApp.Api.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinanceApp.Api.Tests;
@@ -120,6 +121,23 @@ public sealed class TransactionSyncServiceTests
 
         Assert.Equal(1, await database.Context.Transactions.CountAsync());
         Assert.Equal(42m, (await database.Context.Transactions.SingleAsync()).Amount);
+    }
+
+    [Fact]
+    public async Task IncomeAndTransferIn_DefaultToIncomeCategory()
+    {
+        await using var database = await TestDatabase.CreateAsync();
+        var seeded = await database.SeedConnectionAsync();
+        var plaid = new FakePlaidService();
+        plaid.SyncResults.Enqueue(new PlaidSyncPage([
+            TestFactories.Transaction("income", amount: -2_000m, primaryCategory: "INCOME"),
+            TestFactories.Transaction("transfer", amount: -500m, primaryCategory: "TRANSFER_IN")
+        ], [], [], "cursor", false));
+
+        await TestFactories.Synchronizer(database.Context, plaid).SyncAsync(seeded.User.Id, seeded.Connection.Id);
+
+        Assert.All(await database.Context.Transactions.ToArrayAsync(),
+            transaction => Assert.Equal(DefaultCategories.IncomeId, transaction.UserCategoryId));
     }
 
     [Fact]
