@@ -6,7 +6,7 @@ const transaction = (confidence: string | null, userCategoryId: string | null = 
   transactionId: "transaction", accountId: "account", plaidTransactionId: "plaid", date: "2026-10-27",
   authorizedDate: null, name: "Coffee", merchantName: null, amount: 4, currencyCode: "USD", pending: false,
   plaidPrimaryCategory: "FOOD_AND_DRINK", plaidDetailedCategory: null, plaidCategoryConfidence: confidence,
-  userCategoryId, userCategoryName: null, userCategoryBudgetBucket: null, isReviewed: false, notes: null, updatedAt: "2026-10-27T00:00:00Z",
+  userCategoryId, userCategoryName: null, userCategoryBudgetBucket: null, isReviewed: false, isResolved: false, notes: null, updatedAt: "2026-10-27T00:00:00Z",
 }) satisfies FinanceTransaction;
 
 describe("needsCategoryReview", () => {

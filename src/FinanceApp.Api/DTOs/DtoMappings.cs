@@ -22,5 +22,5 @@ public static class DtoMappings
         transaction.PlaidCategoryConfidence, transaction.UserCategoryId,
         transaction.UserCategory?.Name,
         transaction.UserCategory?.BudgetBucket,
-        transaction.IsReviewed, transaction.Notes, transaction.UpdatedAt);
+        transaction.IsReviewed, transaction.IsResolved, transaction.Notes, transaction.UpdatedAt);
 }

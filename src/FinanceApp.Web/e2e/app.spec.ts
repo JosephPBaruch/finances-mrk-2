@@ -92,7 +92,7 @@ test("accounts are grouped by connection and disconnection requires confirmation
   await expect(page.getByText("Test Credit Union")).toHaveCount(0);
 });
 
-test("legacy API transaction identifiers render without a Data Grid error", async ({ page }) => {
+test("legacy API transaction identifiers render with independent resolution", async ({ page }, testInfo) => {
   const pageErrors: string[] = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
   await page.route("**/api/transactions**", (route) => route.fulfill({
@@ -115,6 +115,7 @@ test("legacy API transaction identifiers render without a Data Grid error", asyn
         userCategoryName: null,
         userCategoryBudgetBucket: null,
         isReviewed: false,
+        isResolved: false,
         notes: null,
         updatedAt: "2026-10-27T02:26:40.241599+00:00",
       }],
@@ -128,5 +129,8 @@ test("legacy API transaction identifiers render without a Data Grid error", asyn
   await page.goto("/transactions");
 
   await expect(page.getByText("United Airlines").first()).toBeVisible();
+  if (testInfo.project.name === "chromium") {
+    await expect(page.getByRole("button", { name: "Mark resolved" })).toBeVisible();
+  }
   expect(pageErrors).toEqual([]);
 });

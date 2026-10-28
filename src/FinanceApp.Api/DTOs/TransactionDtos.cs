@@ -21,6 +21,7 @@ public sealed record TransactionResponse(
     string? UserCategoryName,
     string? UserCategoryBudgetBucket,
     bool IsReviewed,
+    bool IsResolved,
     string? Notes,
     DateTimeOffset UpdatedAt);
 
@@ -28,16 +29,19 @@ public sealed class UpdateTransactionRequest
 {
     private Guid? _userCategoryId;
     private bool? _isReviewed;
+    private bool? _isResolved;
     private string? _notes;
 
     public Guid? UserCategoryId { get => _userCategoryId; init { _userCategoryId = value; UserCategoryIdSpecified = true; } }
     public bool? IsReviewed { get => _isReviewed; init { _isReviewed = value; IsReviewedSpecified = true; } }
+    public bool? IsResolved { get => _isResolved; init { _isResolved = value; IsResolvedSpecified = true; } }
 
     [StringLength(4000)]
     public string? Notes { get => _notes; init { _notes = value; NotesSpecified = true; } }
 
     [JsonIgnore] public bool UserCategoryIdSpecified { get; private init; }
     [JsonIgnore] public bool IsReviewedSpecified { get; private init; }
+    [JsonIgnore] public bool IsResolvedSpecified { get; private init; }
     [JsonIgnore] public bool NotesSpecified { get; private init; }
 }
 

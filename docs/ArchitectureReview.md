@@ -19,7 +19,7 @@ The database unique indexes remain the source of truth for duplicate Plaid Items
 
 - `app/` owns routing, the authenticated shell, theme, and shared finance-data loading.
 - `features/accounts/` owns account classification, balance/net-worth calculations, and account presentation.
-- `features/transactions/` owns transaction transport normalization, confidence rules, review, filtering, and assignment UI.
+- `features/transactions/` owns transaction transport normalization, category-confidence review, independent resolution status, filtering, and assignment UI.
 - `features/categories/` owns durable transaction-category-to-budget-bucket mapping.
 - `features/budgets/` owns browser-local monthly planning and budget calculations.
 - `features/auth/` owns the admin session bootstrap and login experience.

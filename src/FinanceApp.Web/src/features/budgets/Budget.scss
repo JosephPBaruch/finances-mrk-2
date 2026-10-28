@@ -13,8 +13,11 @@
   &__dot { width: 11px; height: 11px; border-radius: 50%; box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 12%, transparent); }
 }
 .budget-summary {
-  &__row--favorable { background: color-mix(in srgb, var(--mui-palette-success-main) 8%, transparent); }
-  &__row--unfavorable { background: color-mix(in srgb, var(--mui-palette-error-main) 7%, transparent); }
+  &__row > .MuiTableCell-root { transition: background-color 140ms ease; }
+  &__row--favorable > .MuiTableCell-root { background-color: color-mix(in srgb, var(--mui-palette-success-main) 11%, var(--mui-palette-background-paper)); }
+  &__row--unfavorable > .MuiTableCell-root { background-color: color-mix(in srgb, var(--mui-palette-error-main) 10%, var(--mui-palette-background-paper)); }
+  &__row--favorable > .MuiTableCell-root:first-child { border-left: 3px solid var(--mui-palette-success-main); }
+  &__row--unfavorable > .MuiTableCell-root:first-child { border-left: 3px solid var(--mui-palette-error-main); }
   &__value--favorable { color: var(--mui-palette-success-main) !important; font-weight: 750 !important; }
   &__value--unfavorable { color: var(--mui-palette-error-main) !important; font-weight: 750 !important; }
 }

@@ -8,6 +8,7 @@ import {
   previousPeriod,
   recommendationStatus,
   relativeSavedAt,
+  spendingStatus,
   totalOutflowStatus,
 } from "./budgetUtils";
 
@@ -29,6 +30,7 @@ const transaction = (overrides: Partial<FinanceTransaction>): FinanceTransaction
   userCategoryName: null,
   userCategoryBudgetBucket: null,
   isReviewed: false,
+  isResolved: false,
   notes: null,
   updatedAt: "2026-10-10T00:00:00Z",
   ...overrides,
@@ -52,6 +54,11 @@ describe("budget utilities", () => {
   it("uses minimum semantics for savings targets", () => {
     expect(recommendationStatus("Savings & Investing", 20)).toBe("favorable");
     expect(recommendationStatus("Savings & Investing", 10)).toBe("unfavorable");
+  });
+
+  it("treats saving above goal as favorable and saving below goal as unfavorable", () => {
+    expect(spendingStatus("Savings & Investing", 100, 150)).toBe("favorable");
+    expect(spendingStatus("Savings & Investing", 100, 50)).toBe("unfavorable");
   });
 
   it("treats the 98–102 percent total outflow range as inclusive", () => {

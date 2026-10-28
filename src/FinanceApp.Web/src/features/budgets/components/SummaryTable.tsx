@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
+import { Box, Card, CardContent, Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
 import { BUDGET_CATEGORIES, RECOMMENDED_PERCENTAGES, SAVINGS_CATEGORIES } from "../budgetConstants";
 import type { BudgetController } from "../useBudget";
 import { formatCurrency, spendingStatus, totalOutflowStatus } from "../budgetUtils";
@@ -20,7 +20,7 @@ export function SummaryTable({ budget, periodLabel }: { budget: BudgetController
               <TableCell>Budget Group</TableCell><TableCell align="right">Goal</TableCell>
               {budget.income > 0 && <TableCell align="right">% of Income</TableCell>}
               <TableCell align="right">Recommended</TableCell><TableCell align="right">Actual</TableCell>
-              <TableCell align="right">Difference</TableCell><TableCell align="right">% Used</TableCell>
+              <TableCell align="right">Difference</TableCell><TableCell align="right">% Used</TableCell><TableCell align="center">Status</TableCell>
             </TableRow></TableHead>
             <TableBody>
               {BUDGET_CATEGORIES.map((category) => {
@@ -29,6 +29,11 @@ export function SummaryTable({ budget, periodLabel }: { budget: BudgetController
                 const savings = SAVINGS_CATEGORIES.has(category);
                 const difference = savings ? actual - goal : goal - actual;
                 const status = spendingStatus(category, goal, actual);
+                const statusLabel = status === "neutral"
+                  ? "No goal"
+                  : savings
+                    ? status === "favorable" ? "Target met" : "Below target"
+                    : status === "favorable" ? "Within budget" : "Over budget";
                 return (
                   <TableRow key={category} className={statusClass(status)}>
                     <TableCell><strong>{category}</strong></TableCell>
@@ -38,6 +43,7 @@ export function SummaryTable({ budget, periodLabel }: { budget: BudgetController
                     <TableCell align="right">{formatCurrency(actual)}</TableCell>
                     <TableCell align="right" className={`budget-summary__value--${status}`}>{goal > 0 ? formatCurrency(difference, true) : "—"}</TableCell>
                     <TableCell align="right">{goal > 0 ? `${((actual / goal) * 100).toFixed(1)}%` : "—"}</TableCell>
+                    <TableCell align="center"><Chip size="small" variant="outlined" color={status === "favorable" ? "success" : status === "unfavorable" ? "error" : "default"} label={statusLabel} /></TableCell>
                   </TableRow>
                 );
               })}
@@ -49,6 +55,7 @@ export function SummaryTable({ budget, periodLabel }: { budget: BudgetController
                 <TableCell align="right">{formatCurrency(totalActual)}</TableCell>
                 <TableCell align="right" className={`budget-summary__value--${totalStatus}`}>{formatCurrency(budget.income - totalActual, true)}</TableCell>
                 <TableCell align="right">{budget.income > 0 ? `${totalPercentage.toFixed(1)}%` : "—"}</TableCell>
+                <TableCell align="center"><Chip size="small" variant="outlined" color={totalStatus === "favorable" ? "success" : totalStatus === "unfavorable" ? "error" : "default"} label={totalStatus === "favorable" ? "Balanced" : totalStatus === "unfavorable" ? "Outside target" : "No income"} /></TableCell>
               </TableRow>
             </TableBody>
           </Table>

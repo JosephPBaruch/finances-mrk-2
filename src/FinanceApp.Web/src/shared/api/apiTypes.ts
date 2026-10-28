@@ -51,6 +51,7 @@ export type FinanceTransaction = {
   userCategoryName: string | null;
   userCategoryBudgetBucket: string | null;
   isReviewed: boolean;
+  isResolved: boolean;
   notes: string | null;
   updatedAt: string;
 };

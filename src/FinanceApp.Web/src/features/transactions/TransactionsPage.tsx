@@ -2,6 +2,8 @@ import RefreshRounded from "@mui/icons-material/RefreshRounded";
 import SearchRounded from "@mui/icons-material/SearchRounded";
 import WarningAmberRounded from "@mui/icons-material/WarningAmberRounded";
 import CheckRounded from "@mui/icons-material/CheckRounded";
+import CheckCircleRounded from "@mui/icons-material/CheckCircleRounded";
+import RadioButtonUncheckedRounded from "@mui/icons-material/RadioButtonUncheckedRounded";
 import {
   Alert,
   Box,
@@ -84,6 +86,18 @@ export default function TransactionsPage() {
     }
   };
 
+  const toggleResolved = async (transaction: FinanceTransaction) => {
+    setUpdatingId(transaction.transactionId);
+    try {
+      await transactionApi.update(transaction.transactionId, { isResolved: !transaction.isResolved });
+      await refresh();
+    } catch (requestError) {
+      notify(requestError instanceof Error ? requestError.message : "Unable to update the resolved status.", "error");
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
   const columns: GridColDef<FinanceTransaction>[] = [
     { field: "date", headerName: "Date", width: 112, sortComparator: (left, right) => String(left).localeCompare(String(right)) },
     { field: "merchantName", headerName: "Merchant", flex: 1, minWidth: 170, valueGetter: (_value, row) => row.merchantName ?? row.name },
@@ -96,6 +110,23 @@ export default function TransactionsPage() {
         const account = accountsById.get(row.accountId);
         return account ? `${account.name}${account.mask ? ` ••${account.mask}` : ""}` : "Unknown account";
       },
+    },
+    {
+      field: "isResolved",
+      headerName: "Resolved",
+      width: 155,
+      sortable: true,
+      renderCell: ({ row }) => (
+        <Button
+          size="small"
+          color={row.isResolved ? "success" : "inherit"}
+          startIcon={row.isResolved ? <CheckCircleRounded /> : <RadioButtonUncheckedRounded />}
+          disabled={updatingId === row.transactionId}
+          onClick={() => void toggleResolved(row)}
+        >
+          {row.isResolved ? "Resolved" : "Mark resolved"}
+        </Button>
+      ),
     },
     {
       field: "plaidPrimaryCategory",

@@ -18,6 +18,7 @@ public sealed class FinanceTransaction
     public string? PlaidCategoryConfidence { get; set; }
     public Guid? UserCategoryId { get; set; }
     public bool IsReviewed { get; set; }
+    public bool IsResolved { get; set; }
     public string? Notes { get; set; }
     public bool IsRemoved { get; set; }
     public DateTimeOffset? RemovedAt { get; set; }

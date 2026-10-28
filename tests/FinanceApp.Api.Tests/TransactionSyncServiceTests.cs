@@ -40,6 +40,7 @@ public sealed class TransactionSyncServiceTests
         var existing = StoredTransaction(seeded.Account.Id, "tx-1");
         existing.UserCategoryId = category.Id;
         existing.IsReviewed = true;
+        existing.IsResolved = true;
         existing.Notes = "keep this";
         database.Context.AddRange(category, existing);
         await database.Context.SaveChangesAsync();
@@ -55,6 +56,7 @@ public sealed class TransactionSyncServiceTests
         Assert.Equal("Updated", updated.Name);
         Assert.Equal(category.Id, updated.UserCategoryId);
         Assert.True(updated.IsReviewed);
+        Assert.True(updated.IsResolved);
         Assert.Equal("keep this", updated.Notes);
     }
 
@@ -88,6 +90,7 @@ public sealed class TransactionSyncServiceTests
         var pending = StoredTransaction(seeded.Account.Id, "pending-1");
         pending.Pending = true;
         pending.IsReviewed = true;
+        pending.IsResolved = true;
         pending.Notes = "receipt attached";
         database.Context.Transactions.Add(pending);
         await database.Context.SaveChangesAsync();
@@ -102,6 +105,7 @@ public sealed class TransactionSyncServiceTests
         var posted = await database.Context.Transactions.SingleAsync(x => x.PlaidTransactionId == "posted-1");
         Assert.True(oldTransaction.IsRemoved);
         Assert.True(posted.IsReviewed);
+        Assert.True(posted.IsResolved);
         Assert.Equal("receipt attached", posted.Notes);
         Assert.False(posted.IsRemoved);
     }

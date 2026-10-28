@@ -23,10 +23,10 @@ const controller = (): BudgetController => ({
   savedIncome: 1000,
   transactionIncome: 1000,
   previousIncome: 900,
-  goals: { ...EMPTY_BUDGET_VALUES, "Fixed Necessities": "100", "Lifestyle & Fun": "100" },
-  overriddenGoals: ["Fixed Necessities", "Lifestyle & Fun"],
-  numericGoals: totals({ "Fixed Necessities": 100, "Lifestyle & Fun": 100 }),
-  actuals: totals({ "Fixed Necessities": 80, "Lifestyle & Fun": 120 }),
+  goals: { ...EMPTY_BUDGET_VALUES, "Fixed Necessities": "100", "Lifestyle & Fun": "100", "Savings & Investing": "100" },
+  overriddenGoals: ["Fixed Necessities", "Lifestyle & Fun", "Savings & Investing"],
+  numericGoals: totals({ "Fixed Necessities": 100, "Lifestyle & Fun": 100, "Savings & Investing": 100 }),
+  actuals: totals({ "Fixed Necessities": 80, "Lifestyle & Fun": 120, "Savings & Investing": 150 }),
   lastSavedAt: null,
   saveStatus: "idle",
   setMonth: vi.fn(),
@@ -50,5 +50,7 @@ describe("SummaryTable", () => {
 
     expect(screen.getByText("Fixed Necessities").closest("tr")).toHaveClass("budget-summary__row--favorable");
     expect(screen.getByText("Lifestyle & Fun").closest("tr")).toHaveClass("budget-summary__row--unfavorable");
+    expect(screen.getByText("Savings & Investing").closest("tr")).toHaveClass("budget-summary__row--favorable");
+    expect(screen.getByText("Target met")).toBeInTheDocument();
   });
 });

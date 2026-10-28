@@ -179,7 +179,7 @@ No endpoint returns the Plaid access token or encrypted token value.
 
 ## Querying and editing transactions
 
-`GET /api/transactions` accepts `accountId`, `startDate`, `endDate`, `categoryId`, `isReviewed`, `pending`, `page`, and `pageSize` (maximum 200). Archived Plaid removals are excluded. `PATCH /api/transactions/{transactionId}` accepts only `userCategoryId`, `isReviewed`, and `notes`; amount and Plaid identifiers cannot be changed.
+`GET /api/transactions` accepts `accountId`, `startDate`, `endDate`, `categoryId`, `isReviewed`, `pending`, `page`, and `pageSize` (maximum 200). Archived Plaid removals are excluded. `PATCH /api/transactions/{transactionId}` accepts `userCategoryId`, category-review `isReviewed`, independent workflow status `isResolved`, and `notes`; amount and Plaid identifiers cannot be changed.
 
 `GET /api/categories` returns real transaction categories such as Groceries, Housing, Dining, and Income. `PATCH /api/categories/{categoryId}` changes the category's `budgetBucket`; a null bucket excludes it from spending. Assigning `userCategoryId` corrects a transaction without changing Plaid-owned fields. Accepting Plaid sets `isReviewed=true` while leaving `userCategoryId` null. Plaid `INCOME` and `TRANSFER_IN` transactions default to the Income category and feed monthly income.
 

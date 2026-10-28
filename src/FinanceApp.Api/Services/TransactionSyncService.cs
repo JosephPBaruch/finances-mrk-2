@@ -72,6 +72,7 @@ public sealed class TransactionSyncService(
                 {
                     created.UserCategoryId = pending.UserCategoryId;
                     created.IsReviewed = pending.IsReviewed;
+                    created.IsResolved = pending.IsResolved;
                     created.Notes = pending.Notes;
                     pending.IsRemoved = true;
                     pending.RemovedAt = now;

@@ -79,7 +79,7 @@ public sealed class TransactionsController(FinanceDbContext dbContext, ICurrentU
         return Ok(transaction.ToResponse());
     }
 
-    /// <summary>Updates only user-owned category, review, and notes metadata.</summary>
+    /// <summary>Updates only user-owned category review, independent resolution status, and notes metadata.</summary>
     /// <param name="transactionId">The application's transactionId returned by GET /api/transactions. This is not PlaidTransactionId.</param>
     /// <param name="request">The user-editable transaction metadata. Plaid-owned transaction fields cannot be changed.</param>
     /// <param name="cancellationToken">Canceled when the client disconnects.</param>
@@ -107,6 +107,13 @@ public sealed class TransactionsController(FinanceDbContext dbContext, ICurrentU
                 return BadRequest(new ValidationProblemDetails(new Dictionary<string, string[]>
                 { ["isReviewed"] = ["isReviewed cannot be null."] }));
             transaction.IsReviewed = request.IsReviewed.Value;
+        }
+        if (request.IsResolvedSpecified)
+        {
+            if (!request.IsResolved.HasValue)
+                return BadRequest(new ValidationProblemDetails(new Dictionary<string, string[]>
+                { ["isResolved"] = ["isResolved cannot be null."] }));
+            transaction.IsResolved = request.IsResolved.Value;
         }
         if (request.NotesSpecified) transaction.Notes = request.Notes;
         transaction.UpdatedAt = DateTimeOffset.UtcNow;

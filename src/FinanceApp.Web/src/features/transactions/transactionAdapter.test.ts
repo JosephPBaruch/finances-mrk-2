@@ -19,6 +19,7 @@ const legacyTransaction: TransactionWire = {
   userCategoryName: null,
   userCategoryBudgetBucket: null,
   isReviewed: false,
+  isResolved: false,
   notes: null,
   updatedAt: "2026-10-27T02:26:40.241599+00:00",
 };

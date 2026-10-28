@@ -301,6 +301,9 @@ namespace FinanceApp.Api.Data.Migrations
                     b.Property<bool>("IsRemoved")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsResolved")
+                        .HasColumnType("INTEGER");
+
                     b.Property<bool>("IsReviewed")
                         .HasColumnType("INTEGER");
 
