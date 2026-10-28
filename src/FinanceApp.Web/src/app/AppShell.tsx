@@ -1,10 +1,15 @@
 import AccountBalanceWalletRounded from "@mui/icons-material/AccountBalanceWalletRounded";
+import AccountBalanceRounded from "@mui/icons-material/AccountBalanceRounded";
 import AddRounded from "@mui/icons-material/AddRounded";
 import CategoryRounded from "@mui/icons-material/CategoryRounded";
+import ChevronLeftRounded from "@mui/icons-material/ChevronLeftRounded";
+import ChevronRightRounded from "@mui/icons-material/ChevronRightRounded";
 import DarkModeRounded from "@mui/icons-material/DarkModeRounded";
 import LightModeRounded from "@mui/icons-material/LightModeRounded";
+import LogoutRounded from "@mui/icons-material/LogoutRounded";
 import ReceiptLongRounded from "@mui/icons-material/ReceiptLongRounded";
 import SpaceDashboardRounded from "@mui/icons-material/SpaceDashboardRounded";
+import AutoGraphRounded from "@mui/icons-material/AutoGraphRounded";
 import {
   Avatar,
   Box,
@@ -22,13 +27,16 @@ import { useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { ConnectBankDialog } from "../features/banking/ConnectBankDialog";
 import { BrandMark } from "./BrandMark";
+import { useAuth } from "../features/auth/AuthProvider";
 import "./AppShell.scss";
 
 const routes = [
   { path: "/summary", label: "Summary", icon: <SpaceDashboardRounded /> },
+  { path: "/accounts", label: "Accounts", icon: <AccountBalanceRounded /> },
   { path: "/transactions", label: "Transactions", icon: <ReceiptLongRounded /> },
   { path: "/categories", label: "Categories", icon: <CategoryRounded /> },
   { path: "/budget", label: "Budget", icon: <AccountBalanceWalletRounded /> },
+  { path: "/projection", label: "Projection", icon: <AutoGraphRounded /> },
 ] as const;
 
 export function AppShell({ darkMode, onToggleTheme }: { darkMode: boolean; onToggleTheme: () => void }) {
@@ -37,33 +45,69 @@ export function AppShell({ darkMode, onToggleTheme }: { darkMode: boolean; onTog
   const location = useLocation();
   const navigate = useNavigate();
   const [connectOpen, setConnectOpen] = useState(false);
+  const { status, logout } = useAuth();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(
+    () => localStorage.getItem("financeSidebarCollapsed") === "true",
+  );
+
+  const toggleSidebar = () => {
+    setSidebarCollapsed((current) => {
+      localStorage.setItem("financeSidebarCollapsed", String(!current));
+      return !current;
+    });
+  };
 
   return (
-    <Box className="app-shell">
+    <Box className={`app-shell ${sidebarCollapsed ? "app-shell--collapsed" : ""}`}>
       {desktop ? (
         <aside className="app-shell__sidebar">
-          <BrandMark inverse />
+          <Box className="app-shell__brand-row">
+            <BrandMark inverse compact={sidebarCollapsed} />
+            <Tooltip title={sidebarCollapsed ? "Expand navigation" : "Collapse navigation"} placement="right">
+              <IconButton
+                className="app-shell__collapse"
+                aria-label={sidebarCollapsed ? "Expand navigation" : "Collapse navigation"}
+                onClick={toggleSidebar}
+              >
+                {sidebarCollapsed ? <ChevronRightRounded /> : <ChevronLeftRounded />}
+              </IconButton>
+            </Tooltip>
+          </Box>
           <Typography className="app-shell__overline" variant="overline">Workspace</Typography>
           <nav className="app-shell__nav" aria-label="Main navigation">
             {routes.map((route) => (
-              <NavLink key={route.path} to={route.path} className={({ isActive }) => `app-shell__nav-item ${isActive ? "app-shell__nav-item--active" : ""}`}>
-                {route.icon}<span>{route.label}</span>
-              </NavLink>
+              <Tooltip key={route.path} title={sidebarCollapsed ? route.label : ""} placement="right">
+                <NavLink to={route.path} className={({ isActive }) => `app-shell__nav-item ${isActive ? "app-shell__nav-item--active" : ""}`}>
+                  {route.icon}<span>{route.label}</span>
+                </NavLink>
+              </Tooltip>
             ))}
           </nav>
           <Box className="app-shell__account">
-            <Button fullWidth variant="contained" color="secondary" startIcon={<AddRounded />} onClick={() => setConnectOpen(true)}>
-              Connect bank
+            <Button
+              fullWidth
+              variant="contained"
+              color="secondary"
+              startIcon={sidebarCollapsed ? undefined : <AddRounded />}
+              aria-label="Connect bank"
+              onClick={() => setConnectOpen(true)}
+            >
+              {sidebarCollapsed ? <AddRounded /> : "Connect bank"}
             </Button>
-            <Stack direction="row" alignItems="center" spacing={1.25}>
-              <Avatar sx={{ width: 36, height: 36, bgcolor: "rgba(255,255,255,.14)", color: "white" }}>F</Avatar>
-              <Box sx={{ minWidth: 0, flex: 1 }}>
-                <Typography color="white" fontWeight={700} noWrap>Finance workspace</Typography>
-                <Typography variant="caption" sx={{ color: "rgba(255,255,255,.62)" }}>Local development user</Typography>
+            <Stack className="app-shell__profile" direction="row" alignItems="center" spacing={1.25}>
+              <Avatar sx={{ width: 36, height: 36, bgcolor: "rgba(255,255,255,.14)", color: "white" }}>{status?.displayName.charAt(0).toUpperCase() ?? "F"}</Avatar>
+              <Box className="app-shell__profile-copy" sx={{ minWidth: 0, flex: 1 }}>
+                <Typography color="white" fontWeight={700} noWrap>{status?.displayName ?? "Finance admin"}</Typography>
+                <Typography variant="caption" sx={{ color: "rgba(255,255,255,.62)" }}>{status?.email}</Typography>
               </Box>
               <Tooltip title={darkMode ? "Use light mode" : "Use dark mode"}>
                 <IconButton aria-label={darkMode ? "Use light mode" : "Use dark mode"} onClick={onToggleTheme} sx={{ color: "white" }}>
                   {darkMode ? <LightModeRounded /> : <DarkModeRounded />}
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Sign out">
+                <IconButton aria-label="Sign out" onClick={() => void logout()} sx={{ color: "white" }}>
+                  <LogoutRounded />
                 </IconButton>
               </Tooltip>
             </Stack>
@@ -78,6 +122,7 @@ export function AppShell({ darkMode, onToggleTheme }: { darkMode: boolean; onTog
               <IconButton aria-label={darkMode ? "Use light mode" : "Use dark mode"} onClick={onToggleTheme} sx={{ color: "white" }}>
                 {darkMode ? <LightModeRounded /> : <DarkModeRounded />}
               </IconButton>
+              <IconButton aria-label="Sign out" onClick={() => void logout()} sx={{ color: "white" }}><LogoutRounded /></IconButton>
             </Stack>
           </Stack>
           <Tabs

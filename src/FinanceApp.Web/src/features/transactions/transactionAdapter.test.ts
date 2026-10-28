@@ -16,6 +16,7 @@ const legacyTransaction: TransactionWire = {
   plaidDetailedCategory: "TRAVEL_FLIGHTS",
   plaidCategoryConfidence: "VERY_HIGH",
   userCategoryId: null,
+  userCategoryName: null,
   isReviewed: false,
   notes: null,
   updatedAt: "2026-10-27T02:26:40.241599+00:00",

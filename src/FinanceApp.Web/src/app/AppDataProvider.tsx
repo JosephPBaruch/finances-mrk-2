@@ -1,12 +1,14 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import type { Account, BankConnection, FinanceTransaction } from "../shared/api/apiTypes";
+import type { Account, BankConnection, FinanceTransaction, UserCategory } from "../shared/api/apiTypes";
 import { bankingApi } from "../features/banking/bankingApi";
 import { transactionApi } from "../features/transactions/transactionApi";
+import { categoryApi } from "../features/categories/categoryApi";
 
 type AppDataContextValue = {
   connections: BankConnection[];
   accounts: Account[];
   transactions: FinanceTransaction[];
+  categories: UserCategory[];
   loading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
@@ -18,6 +20,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const [connections, setConnections] = useState<BankConnection[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [transactions, setTransactions] = useState<FinanceTransaction[]>([]);
+  const [categories, setCategories] = useState<UserCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,14 +28,16 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError(null);
     try {
-      const [nextConnections, nextAccounts, nextTransactions] = await Promise.all([
+      const [nextConnections, nextAccounts, nextTransactions, nextCategories] = await Promise.all([
         bankingApi.getConnections(),
         bankingApi.getAccounts(),
         transactionApi.getAll(),
+        categoryApi.getAll(),
       ]);
       setConnections(nextConnections);
       setAccounts(nextAccounts);
       setTransactions(nextTransactions);
+      setCategories(nextCategories);
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "Unable to load finance data.");
     } finally {
@@ -45,8 +50,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   }, [refresh]);
 
   const value = useMemo(
-    () => ({ connections, accounts, transactions, loading, error, refresh }),
-    [connections, accounts, transactions, loading, error, refresh],
+    () => ({ connections, accounts, transactions, categories, loading, error, refresh }),
+    [connections, accounts, transactions, categories, loading, error, refresh],
   );
 
   return <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>;

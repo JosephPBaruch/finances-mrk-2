@@ -48,9 +48,23 @@ export type FinanceTransaction = {
   plaidDetailedCategory: string | null;
   plaidCategoryConfidence: string | null;
   userCategoryId: string | null;
+  userCategoryName: string | null;
   isReviewed: boolean;
   notes: string | null;
   updatedAt: string;
+};
+
+export type UserCategory = {
+  categoryId: string;
+  name: string;
+  description: string | null;
+};
+
+export type AuthStatus = {
+  isAuthenticated: boolean;
+  needsSetup: boolean;
+  email: string;
+  displayName: string;
 };
 
 export type PagedResponse<T> = {

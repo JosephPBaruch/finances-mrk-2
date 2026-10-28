@@ -95,6 +95,48 @@ namespace FinanceApp.Api.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("Categories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("b72c15e4-f0f0-4bd4-9ca1-b2cf8d989001"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Default personal-finance budget category",
+                            Name = "Fixed Necessities",
+                            UserId = new Guid("79dce62a-54f4-43d7-9b4c-a99866858727")
+                        },
+                        new
+                        {
+                            Id = new Guid("b72c15e4-f0f0-4bd4-9ca1-b2cf8d989002"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Default personal-finance budget category",
+                            Name = "Variable Necessities",
+                            UserId = new Guid("79dce62a-54f4-43d7-9b4c-a99866858727")
+                        },
+                        new
+                        {
+                            Id = new Guid("b72c15e4-f0f0-4bd4-9ca1-b2cf8d989003"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Default personal-finance budget category",
+                            Name = "Savings & Investing",
+                            UserId = new Guid("79dce62a-54f4-43d7-9b4c-a99866858727")
+                        },
+                        new
+                        {
+                            Id = new Guid("b72c15e4-f0f0-4bd4-9ca1-b2cf8d989004"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Default personal-finance budget category",
+                            Name = "Lifestyle & Fun",
+                            UserId = new Guid("79dce62a-54f4-43d7-9b4c-a99866858727")
+                        },
+                        new
+                        {
+                            Id = new Guid("b72c15e4-f0f0-4bd4-9ca1-b2cf8d989005"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Default personal-finance budget category",
+                            Name = "Irregular & Sinking Funds",
+                            UserId = new Guid("79dce62a-54f4-43d7-9b4c-a99866858727")
+                        });
                 });
 
             modelBuilder.Entity("FinanceApp.Api.Models.FinanceTransaction", b =>
@@ -268,6 +310,16 @@ namespace FinanceApp.Api.Data.Migrations
                         .HasMaxLength(320)
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsAdmin")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("PasswordHash")
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset?>("PasswordSetAt")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
@@ -281,7 +333,8 @@ namespace FinanceApp.Api.Data.Migrations
                             Id = new Guid("79dce62a-54f4-43d7-9b4c-a99866858727"),
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             DisplayName = "Development User",
-                            Email = "developer@financeapp.local"
+                            Email = "developer@financeapp.local",
+                            IsAdmin = true
                         });
                 });
 

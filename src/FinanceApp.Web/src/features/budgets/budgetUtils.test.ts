@@ -25,6 +25,7 @@ const transaction = (overrides: Partial<FinanceTransaction>): FinanceTransaction
   plaidDetailedCategory: "FOOD_AND_DRINK_GROCERIES",
   plaidCategoryConfidence: "HIGH",
   userCategoryId: null,
+  userCategoryName: null,
   isReviewed: false,
   notes: null,
   updatedAt: "2026-10-10T00:00:00Z",
@@ -62,6 +63,14 @@ describe("budget utilities", () => {
     expect(actuals["Lifestyle & Fun"]).toBe(25);
     expect(actuals["Variable Necessities"]).toBe(0);
     expect(Object.keys(actuals)).toEqual(Object.keys(EMPTY_BUDGET_VALUES));
+  });
+
+  it("prefers a transaction-level assigned category over the Plaid mapping", () => {
+    const actuals = calculateActuals([
+      transaction({ userCategoryId: "category", userCategoryName: "Savings & Investing" }),
+    ], 10, 2026, { FOOD_AND_DRINK: "Lifestyle & Fun" });
+    expect(actuals["Savings & Investing"]).toBe(25);
+    expect(actuals["Lifestyle & Fun"]).toBe(0);
   });
 
   it("formats relative save times", () => {

@@ -22,11 +22,20 @@ export function normalizeAccount(account: AccountWire): Account {
   return { ...current, accountId: requiredId("accountId", account.accountId, id) };
 }
 
+export function normalizeAccounts(accounts: AccountWire[]): Account[] {
+  const unique = new Map<string, Account>();
+  accounts.forEach((account) => {
+    const normalized = normalizeAccount(account);
+    unique.set(normalized.accountId, normalized);
+  });
+  return [...unique.values()];
+}
+
 export function normalizeConnection(connection: BankConnectionWire): BankConnection {
   const { id, ...current } = connection;
   return {
     ...current,
     bankConnectionId: requiredId("bankConnectionId", connection.bankConnectionId, id),
-    accounts: connection.accounts.map(normalizeAccount),
+    accounts: normalizeAccounts(connection.accounts),
   };
 }

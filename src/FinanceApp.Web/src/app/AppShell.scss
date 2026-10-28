@@ -1,19 +1,28 @@
 .app-shell {
+  --sidebar-width: 268px;
   min-height: 100vh;
+
+  &--collapsed { --sidebar-width: 88px; }
 
   &__sidebar {
     position: fixed;
     inset: 0 auto 0 0;
-    width: 252px;
+    width: var(--sidebar-width);
     display: flex;
     flex-direction: column;
-    padding: 24px 18px 20px;
-    background: #123b31;
+    padding: 22px 16px 18px;
+    background:
+      radial-gradient(circle at 18% 0%, rgba(117, 184, 159, 0.16), transparent 32%),
+      linear-gradient(180deg, #123b31 0%, #0d2f27 100%);
     border-right: 1px solid rgba(255, 255, 255, 0.08);
     z-index: 20;
+    transition: width 180ms ease, padding 180ms ease;
   }
 
-  &__overline { margin: 46px 12px 10px !important; color: rgba(255, 255, 255, 0.48); letter-spacing: .14em !important; }
+  &__brand-row { display: flex; align-items: center; justify-content: space-between; min-height: 40px; gap: 8px; }
+  &__collapse { color: rgba(255, 255, 255, 0.72) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; }
+  &__collapse:hover { color: white !important; background: rgba(255, 255, 255, 0.08) !important; }
+  &__overline { margin: 40px 12px 10px !important; color: rgba(255, 255, 255, 0.48); letter-spacing: .14em !important; white-space: nowrap; overflow: hidden; }
   &__nav { display: grid; gap: 6px; }
   &__nav-item {
     display: flex;
@@ -21,10 +30,13 @@
     gap: 12px;
     padding: 11px 13px;
     color: rgba(255, 255, 255, 0.7);
-    border-radius: 999px;
+    min-height: 46px;
+    border-radius: 13px;
     text-decoration: none;
     font-size: .93rem;
     font-weight: 650;
+    white-space: nowrap;
+    overflow: hidden;
     transition: 160ms ease;
     &:hover { color: white; background: rgba(255, 255, 255, 0.07); }
     &--active { color: white; background: rgba(255, 255, 255, 0.11); box-shadow: inset 0 0 0 1px rgba(255,255,255,.05); }
@@ -32,11 +44,24 @@
   }
 
   &__account { margin-top: auto; display: grid; gap: 18px; }
-  &__main { margin-left: 252px; min-height: 100vh; }
+  &__profile-copy { overflow: hidden; white-space: nowrap; }
+  &__main { margin-left: var(--sidebar-width); min-height: 100vh; transition: margin-left 180ms ease; }
   &__mobile-header { position: sticky; top: 0; z-index: 20; color: white; background: #123b31; box-shadow: 0 8px 30px rgba(0,0,0,.16); }
   &__mobile-header .MuiTabs-indicator { background-color: #d9a96c; height: 3px; }
   &__mobile-header .MuiTab-root { color: rgba(255,255,255,.68); min-width: 108px; }
   &__mobile-header .Mui-selected { color: white; }
+}
+
+.app-shell--collapsed {
+  .app-shell__sidebar { padding-inline: 14px; }
+  .app-shell__brand-row { justify-content: center; flex-direction: column; }
+  .app-shell__collapse { position: absolute; top: 76px; width: 34px; height: 34px; }
+  .app-shell__overline { visibility: hidden; margin-top: 64px !important; }
+  .app-shell__nav-item { justify-content: center; padding-inline: 0; }
+  .app-shell__nav-item span, .app-shell__profile-copy { display: none; }
+  .app-shell__profile { justify-content: center; }
+  .app-shell__profile .MuiIconButton-root { display: none; }
+  .app-shell__account .MuiButton-root { min-width: 0; padding-inline: 0; }
 }
 
 @media (max-width: 899px) {

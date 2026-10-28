@@ -41,6 +41,9 @@ export function resolveBudgetCategory(
   transaction: FinanceTransaction,
   mappings: CategoryMappings,
 ): BudgetCategory | "Excluded" {
+  if (transaction.userCategoryName && BUDGET_CATEGORIES.includes(transaction.userCategoryName as BudgetCategory)) {
+    return transaction.userCategoryName as BudgetCategory;
+  }
   const primary = transaction.plaidPrimaryCategory ?? "UNCATEGORIZED";
   return mappings[primary] ?? defaultBudgetCategory(primary, transaction.plaidDetailedCategory);
 }

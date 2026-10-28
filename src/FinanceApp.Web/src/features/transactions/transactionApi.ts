@@ -40,7 +40,7 @@ export const transactionApi = {
     return [first, ...remaining].flatMap((page) => page.items);
   },
 
-  update: (transactionId: string, values: { isReviewed?: boolean; notes?: string | null }) =>
+  update: (transactionId: string, values: { userCategoryId?: string | null; isReviewed?: boolean; notes?: string | null }) =>
     apiRequest<TransactionWire>(`/transactions/${transactionId}`, {
       method: "PATCH",
       body: values,

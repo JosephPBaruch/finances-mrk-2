@@ -3,6 +3,8 @@ using FinanceApp.Api.Configuration;
 using FinanceApp.Api.Data;
 using FinanceApp.Api.Middleware;
 using FinanceApp.Api.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 
@@ -20,6 +22,40 @@ var builder = WebApplication.CreateBuilder(args);
 // Calling Build() later turns these registrations into the service provider that
 // supplies constructor arguments to controllers and services automatically.
 builder.Services.AddProblemDetails();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.Cookie.Name = "financeapp.admin";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SameSite = SameSiteMode.Strict;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        options.SlidingExpiration = true;
+        options.ExpireTimeSpan = TimeSpan.FromDays(14);
+        options.Events.OnRedirectToLogin = context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            return context.Response.WriteAsJsonAsync(new
+            {
+                status = 401,
+                title = "Authentication required",
+                detail = "Sign in with the admin account to access this resource."
+            });
+        };
+        options.Events.OnRedirectToAccessDenied = context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            return context.Response.WriteAsJsonAsync(new
+            {
+                status = 403,
+                title = "Access denied",
+                detail = "The current session cannot access this resource."
+            });
+        };
+    });
+builder.Services.AddAuthorizationBuilder().SetFallbackPolicy(new AuthorizationPolicyBuilder()
+    .RequireAuthenticatedUser()
+    .Build());
 builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
 {
     options.InvalidModelStateResponseFactory = ApiValidationProblemDetailsFactory.Create;
@@ -54,7 +90,8 @@ builder.Services.AddHttpClient<IPlaidService, PlaidService>((services, client) =
 // instance of each service, and services resolved during that request can safely
 // share its scoped FinanceDbContext.
 builder.Services.AddScoped<IEncryptionService, AesGcmEncryptionService>();
-builder.Services.AddScoped<ICurrentUserService, DevelopmentCurrentUserService>();
+builder.Services.AddSingleton<IPasswordHashingService, Pbkdf2PasswordHashingService>();
+builder.Services.AddScoped<ICurrentUserService, AuthenticatedCurrentUserService>();
 builder.Services.AddScoped<IBankConnectionService, BankConnectionService>();
 builder.Services.AddScoped<ITransactionSyncService, TransactionSyncService>();
 
@@ -92,6 +129,8 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 
 // Startup code is not running inside an HTTP request, so create a temporary scope

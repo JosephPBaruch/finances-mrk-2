@@ -5,6 +5,8 @@ import {
   AccordionSummary,
   Alert,
   Box,
+  Button,
+  Chip,
   InputAdornment,
   Stack,
   TextField,
@@ -44,6 +46,17 @@ export function GoalsPanel({ budget, periodLabel }: { budget: BudgetController; 
                       <Typography variant="caption" color="text.secondary">
                         {SAVINGS_CATEGORIES.has(category) ? "At least" : "Up to"} {RECOMMENDED_PERCENTAGES[category]}% recommended
                       </Typography>
+                      <Stack direction="row" spacing={1} alignItems="center" mt={0.75}>
+                        <Chip
+                          size="small"
+                          color={budget.overriddenGoals.includes(category) ? "default" : "success"}
+                          variant="outlined"
+                          label={budget.overriddenGoals.includes(category) ? "Custom for this month" : "Recommended default"}
+                        />
+                        {budget.overriddenGoals.includes(category) && (
+                          <Button size="small" onClick={() => budget.resetGoalToRecommended(category)}>Use default</Button>
+                        )}
+                      </Stack>
                     </Box>
                   </Box>
                   <TextField

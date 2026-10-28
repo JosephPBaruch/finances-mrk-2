@@ -1,0 +1,15 @@
+.auth-page {
+  position: relative;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: 24px;
+  background: radial-gradient(circle at 30% 20%, rgba(117, 184, 159, .15), transparent 28%), linear-gradient(145deg, #0e1714, #123b31);
+
+  &__glow { position: absolute; right: -12vw; bottom: -24vw; width: 60vw; height: 60vw; border-radius: 50%; background: rgba(217, 169, 108, .08); filter: blur(10px); }
+  &__card { width: min(440px, 100%); position: relative; z-index: 1; box-shadow: 0 34px 100px rgba(0, 0, 0, .32) !important; }
+  &__card .MuiCardContent-root { padding: 34px; }
+  &__lock { width: 48px; height: 48px; display: grid; place-items: center; margin: 36px 0 18px; border-radius: 14px; color: var(--mui-palette-secondary-main); background: color-mix(in srgb, var(--mui-palette-secondary-main) 12%, transparent); }
+}
+@media (max-width: 480px) { .auth-page { padding: 14px; } .auth-page__card .MuiCardContent-root { padding: 26px 22px; } }

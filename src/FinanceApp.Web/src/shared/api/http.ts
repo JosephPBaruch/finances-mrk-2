@@ -33,6 +33,9 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   });
 
   if (!response.ok) {
+    if (response.status === 401 && typeof window !== "undefined") {
+      window.dispatchEvent(new Event("finance:unauthorized"));
+    }
     const contentType = response.headers.get("content-type") ?? "";
     const problem = contentType.includes("application/json")
       ? ((await response.json()) as ProblemDetails)

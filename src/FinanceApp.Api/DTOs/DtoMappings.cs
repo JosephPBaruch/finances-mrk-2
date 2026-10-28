@@ -20,5 +20,6 @@ public static class DtoMappings
         transaction.Amount, transaction.CurrencyCode, transaction.Pending,
         transaction.PlaidPrimaryCategory, transaction.PlaidDetailedCategory,
         transaction.PlaidCategoryConfidence, transaction.UserCategoryId,
+        transaction.UserCategory?.Name,
         transaction.IsReviewed, transaction.Notes, transaction.UpdatedAt);
 }

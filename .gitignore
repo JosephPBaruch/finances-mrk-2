@@ -155,7 +155,8 @@ vite.config.ts.timestamp-*
 **/obj/
 .vs/
 .idea/
-.vscode/
+.vscode/*
+!.vscode/settings.json
 .DS_Store
 src/FinanceApp.Api/storage/
 *.db

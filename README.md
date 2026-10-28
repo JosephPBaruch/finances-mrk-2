@@ -1,6 +1,6 @@
 # Finances — Personal Finance App
 
-Full-stack personal finance and budgeting application. The ASP.NET Core API provides encrypted Plaid Item storage, Sandbox and Link onboarding, account retrieval, cursor-based transaction synchronization, review metadata, and SQLite persistence. The React application adds responsive summaries, transaction review, automatic Plaid category-to-budget-bucket mapping, monthly goals, income planning, charts, and a five-bucket budget.
+Full-stack personal finance and budgeting application. The ASP.NET Core API provides single-admin authentication, encrypted Plaid Item storage, Sandbox and Link onboarding, account retrieval, cursor-based transaction synchronization, review metadata, and SQLite persistence. The React application adds account/net-worth overviews, responsive summaries, transaction review, confidence-aware category assignment, monthly goals, income planning, wealth projections, charts, and a five-bucket budget.
 
 ## Architecture
 
@@ -14,7 +14,7 @@ The backend is split into straightforward layers:
 - `Configuration/` — strongly typed Plaid and encryption settings
 - `Middleware/` — centralized, safe RFC 7807 ProblemDetails responses
 
-Every request is scoped through `ICurrentUserService`. `DevelopmentCurrentUserService` resolves the automatically seeded development user; controllers never accept an unauthenticated user ID. `BankConnection` represents one Plaid Item and can own many accounts.
+Every protected request is scoped through `ICurrentUserService`. `AuthenticatedCurrentUserService` resolves the signed-in admin from a server-issued HTTP-only cookie; controllers never accept a user ID from the client. `BankConnection` represents one Plaid Item and can own many accounts.
 
 Access tokens are encrypted with AES-256-GCM using a configuration-supplied key. Transaction synchronization collects all Plaid pages before starting one EF transaction. Transaction changes and the final cursor therefore commit atomically. Removed rows are archived with `IsRemoved`/`RemovedAt`, and Plaid updates never replace `UserCategoryId`, `IsReviewed`, or `Notes`.
 
@@ -96,7 +96,20 @@ rm -f src/FinanceApp.Api/storage/finance.db src/FinanceApp.Api/storage/finance.d
 dotnet ef database update --project src/FinanceApp.Api --startup-project src/FinanceApp.Api
 ```
 
-The initial migration seeds `developer@financeapp.local`. Application code resolves that row through `ICurrentUserService`.
+The initial migration seeds `developer@financeapp.local`; the authentication migration marks it as the single admin. On first launch, the web app asks the admin to set a password before exposing financial data.
+
+## Single-admin authentication
+
+The application intentionally has no registration or password-change endpoint. On the first visit, the seeded admin sets a password of at least 12 characters. The API stores only a salted PBKDF2-SHA256 hash and starts a 14-day, HTTP-only, same-site cookie session.
+
+To authorize a password reset, update the database directly while the API is stopped:
+
+```bash
+sqlite3 src/FinanceApp.Api/storage/finance.db \
+  "UPDATE Users SET PasswordHash = NULL, PasswordSetAt = NULL WHERE IsAdmin = 1;"
+```
+
+Restart the API on a trusted/local network and immediately complete the one-time setup screen again. Resetting these fields temporarily re-enables initial setup, so do not leave an internet-accessible instance running in that state. The admin email/display name can also be changed directly in the `Users` table. There is deliberately no API route for changing the password after initial setup.
 
 ## Run and use Swagger
 
@@ -235,10 +248,6 @@ docker compose down -v
 - Transaction amounts preserve Plaid's sign convention. The API does not infer income from sign.
 - No webhook endpoint, automatic scheduler, delete/disconnect endpoint, key rotation, or production re-authentication Link flow is included yet.
 
-## Future authentication
-
-Replace `DevelopmentCurrentUserService` with an implementation backed by ASP.NET Core Identity or validated JWT claims, register it as `ICurrentUserService`, and add authorization policies to controllers. Existing queries and services already scope data by the resolved user, so clients will not start passing arbitrary user IDs. Before production, also remove the development user seed through a migration and secure every endpoint, especially token exchange and Link-token creation.
-
 ## Frontend and future clients
 
-The React client requests `POST /api/plaid/link-token`, launches Plaid Link, and sends the resulting public token to `POST /api/plaid/exchange-token`. It consumes only API DTOs; Plaid secrets and access tokens remain server-side. Production authentication, webhook-triggered refresh notifications, durable server-side budget preferences, and mobile deep-link/OAuth handling remain future work.
+The React client requests `POST /api/plaid/link-token`, launches Plaid Link, and sends the resulting public token to `POST /api/plaid/exchange-token`. It consumes only API DTOs; Plaid secrets and access tokens remain server-side. Webhook-triggered refresh notifications, durable server-side budget preferences, multi-user identity, and mobile deep-link/OAuth handling remain future work.

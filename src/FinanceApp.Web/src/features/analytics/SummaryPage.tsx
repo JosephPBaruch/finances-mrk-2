@@ -1,7 +1,7 @@
-import AccountBalanceRounded from "@mui/icons-material/AccountBalanceRounded";
 import AutoAwesomeRounded from "@mui/icons-material/AutoAwesomeRounded";
 import ReceiptLongRounded from "@mui/icons-material/ReceiptLongRounded";
 import TrendingDownRounded from "@mui/icons-material/TrendingDownRounded";
+import TrendingUpRounded from "@mui/icons-material/TrendingUpRounded";
 import {
   Alert,
   Box,
@@ -33,9 +33,10 @@ import { useAppData } from "../../app/AppDataProvider";
 import { BUDGET_CATEGORIES, BUDGET_COLORS } from "../budgets/budgetConstants";
 import { loadCategoryMappings } from "../budgets/budgetStorage";
 import { calculateActuals, formatCurrency, isInPeriod } from "../budgets/budgetUtils";
+import { summarizeAccounts } from "../accounts/accountUtils";
 import "./SummaryPage.scss";
 
-const statIcons = [<TrendingDownRounded />, <ReceiptLongRounded />, <AutoAwesomeRounded />, <AccountBalanceRounded />];
+const statIcons = [<TrendingDownRounded />, <TrendingUpRounded />, <AutoAwesomeRounded />, <ReceiptLongRounded />];
 
 function completedMonths(count: number): Array<{ month: number; year: number; label: string }> {
   const result: Array<{ month: number; year: number; label: string }> = [];
@@ -48,7 +49,7 @@ function completedMonths(count: number): Array<{ month: number; year: number; la
 }
 
 export default function SummaryPage() {
-  const { transactions, connections, loading, error } = useAppData();
+  const { transactions, connections, accounts, loading, error } = useAppData();
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year, setYear] = useState(now.getFullYear());
@@ -58,6 +59,10 @@ export default function SummaryPage() {
   const periodTransactions = transactions.filter((transaction) => isInPeriod(transaction.date, month, year));
   const expenseTransactions = periodTransactions.filter((transaction) => transaction.amount > 0);
   const totalSpending = expenseTransactions.reduce((total, transaction) => total + transaction.amount, 0);
+  const totalIncome = Math.abs(periodTransactions.filter((transaction) => transaction.amount < 0)
+    .reduce((total, transaction) => total + transaction.amount, 0));
+  const netCashFlow = totalIncome - totalSpending;
+  const accountTotals = summarizeAccounts(accounts);
   const categorized = periodTransactions.filter((transaction) => transaction.plaidPrimaryCategory !== null).length;
   const needsAttention = periodTransactions.filter((transaction) => !transaction.plaidPrimaryCategory || transaction.plaidCategoryConfidence === "LOW").length;
   const pieData = BUDGET_CATEGORIES.map((name) => ({ name, value: actuals[name] })).filter((item) => item.value > 0);
@@ -67,10 +72,10 @@ export default function SummaryPage() {
     ...calculateActuals(transactions, period.month, period.year, mappings),
   }));
   const stats = [
-    { label: "Total spending", value: formatCurrency(totalSpending) },
+    { label: "Monthly outflow", value: formatCurrency(totalSpending) },
+    { label: "Monthly inflow", value: formatCurrency(totalIncome) },
+    { label: "Net cash flow", value: formatCurrency(netCashFlow, true) },
     { label: "Transactions", value: String(periodTransactions.length) },
-    { label: "Categorized", value: periodTransactions.length ? `${Math.round((categorized / periodTransactions.length) * 100)}%` : "0%" },
-    { label: "Needs attention", value: String(needsAttention) },
   ];
 
   return (
@@ -88,6 +93,19 @@ export default function SummaryPage() {
       </header>
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
       {loading && <LinearProgress sx={{ mb: 2 }} />}
+      <Card className="summary__net-worth"><CardContent>
+        <Box>
+          <Typography variant="body2" color="text.secondary">Estimated net worth</Typography>
+          <Typography variant="h3" mt={0.6}>{formatCurrency(accountTotals.netWorth)}</Typography>
+          <Typography variant="body2" color="text.secondary" mt={1}>Across {accounts.length} connected account{accounts.length === 1 ? "" : "s"}</Typography>
+        </Box>
+        <Box className="summary__net-breakdown">
+          <Box><Typography variant="caption" color="text.secondary">Assets</Typography><Typography variant="h6" color="success.main">{formatCurrency(accountTotals.assets)}</Typography></Box>
+          <Box><Typography variant="caption" color="text.secondary">Liabilities</Typography><Typography variant="h6" color="error.main">{formatCurrency(accountTotals.liabilities)}</Typography></Box>
+          <Box><Typography variant="caption" color="text.secondary">Categorized</Typography><Typography variant="h6">{periodTransactions.length ? `${Math.round((categorized / periodTransactions.length) * 100)}%` : "0%"}</Typography></Box>
+          <Box><Typography variant="caption" color="text.secondary">Needs review</Typography><Typography variant="h6" color={needsAttention ? "warning.main" : "success.main"}>{needsAttention}</Typography></Box>
+        </Box>
+      </CardContent></Card>
       <Box className="summary__stats">
         {stats.map((stat, index) => <Card key={stat.label}><CardContent className="summary__stat"><Box className="summary__stat-icon">{statIcons[index]}</Box><Box><Typography variant="body2" color="text.secondary">{stat.label}</Typography><Typography variant="h4" mt={.4}>{stat.value}</Typography></Box></CardContent></Card>)}
       </Box>

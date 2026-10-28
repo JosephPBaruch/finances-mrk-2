@@ -7,6 +7,7 @@ export type BudgetComparisonStatus = "favorable" | "unfavorable" | "neutral";
 export type BudgetPeriodData = {
   incomeOverride: number | null;
   goals: BudgetValues;
+  overriddenGoals: BudgetCategory[];
   updatedAt: string | null;
 };
 

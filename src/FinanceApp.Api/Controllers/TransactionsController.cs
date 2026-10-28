@@ -45,7 +45,7 @@ public sealed class TransactionsController(FinanceDbContext dbContext, ICurrentU
             { ["dateRange"] = ["startDate cannot be after endDate."] }));
 
         var user = await currentUserService.GetCurrentUserAsync(cancellationToken);
-        var query = dbContext.Transactions.AsNoTracking()
+        var query = dbContext.Transactions.AsNoTracking().Include(x => x.UserCategory)
             .Where(x => x.FinancialAccount.BankConnection.UserId == user.Id && !x.IsRemoved);
         if (accountId.HasValue) query = query.Where(x => x.FinancialAccountId == accountId);
         if (startDate.HasValue) query = query.Where(x => x.Date >= startDate);
@@ -73,7 +73,7 @@ public sealed class TransactionsController(FinanceDbContext dbContext, ICurrentU
     public async Task<ActionResult<TransactionResponse>> GetById(Guid transactionId, CancellationToken cancellationToken)
     {
         var user = await currentUserService.GetCurrentUserAsync(cancellationToken);
-        var transaction = await dbContext.Transactions.AsNoTracking().SingleOrDefaultAsync(
+        var transaction = await dbContext.Transactions.AsNoTracking().Include(x => x.UserCategory).SingleOrDefaultAsync(
             x => x.Id == transactionId && !x.IsRemoved && x.FinancialAccount.BankConnection.UserId == user.Id, cancellationToken)
             ?? throw new ResourceNotFoundException("Transaction was not found.");
         return Ok(transaction.ToResponse());

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAppData } from "../../app/AppDataProvider";
 import { BUDGET_CATEGORIES, type BudgetCategory } from "./budgetConstants";
-import { loadBudgetPeriod, loadCategoryMappings, saveBudgetPeriod } from "./budgetStorage";
+import { loadBudgetPeriod, loadCategoryMappings, recommendedGoals, saveBudgetPeriod } from "./budgetStorage";
 import type { BudgetValues } from "./budgetTypes";
 import { calculateActuals, calculateIncome, goalTotals, previousPeriod } from "./budgetUtils";
 
@@ -13,6 +13,7 @@ export function useBudget() {
   const [income, setIncome] = useState(0);
   const [savedIncome, setSavedIncome] = useState(0);
   const [goals, setGoals] = useState<BudgetValues>(() => loadBudgetPeriod(year, month).goals);
+  const [overriddenGoals, setOverriddenGoals] = useState<BudgetCategory[]>(() => loadBudgetPeriod(year, month).overriddenGoals);
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [dirty, setDirty] = useState(false);
@@ -26,9 +27,11 @@ export function useBudget() {
   const numericGoals = useMemo(() => goalTotals(goals), [goals]);
 
   useEffect(() => {
-    const period = loadBudgetPeriod(year, month);
-    const nextIncome = period.incomeOverride ?? calculateIncome(transactions, month, year);
+    const storedPeriod = loadBudgetPeriod(year, month);
+    const nextIncome = storedPeriod.incomeOverride ?? calculateIncome(transactions, month, year);
+    const period = loadBudgetPeriod(year, month, nextIncome);
     setGoals(period.goals);
+    setOverriddenGoals(period.overriddenGoals);
     setIncome(nextIncome);
     setSavedIncome(nextIncome);
     setLastSavedAt(period.updatedAt);
@@ -38,13 +41,14 @@ export function useBudget() {
   }, [month, transactions, year]);
 
   const persist = useCallback(
-    (nextGoals = goals, nextIncome = savedIncome) => {
+    (nextGoals = goals, nextIncome = savedIncome, nextOverriddenGoals = overriddenGoals) => {
       setSaveStatus("saving");
       try {
         const updatedAt = new Date().toISOString();
         saveBudgetPeriod(year, month, {
           incomeOverride: nextIncome,
           goals: nextGoals,
+          overriddenGoals: nextOverriddenGoals,
           updatedAt,
         });
         setLastSavedAt(updatedAt);
@@ -54,7 +58,7 @@ export function useBudget() {
         setSaveStatus("error");
       }
     },
-    [goals, month, savedIncome, year],
+    [goals, month, overriddenGoals, savedIncome, year],
   );
 
   useEffect(() => {
@@ -65,15 +69,31 @@ export function useBudget() {
 
   const setGoal = (category: BudgetCategory, value: string) => {
     setGoals((current) => ({ ...current, [category]: value }));
+    setOverriddenGoals((current) => current.includes(category) ? current : [...current, category]);
     setDirty(true);
     setSaveStatus("idle");
   };
 
   const saveIncome = (nextIncome: number) => {
     const normalized = Math.max(0, Math.round(nextIncome * 100) / 100);
+    const defaults = recommendedGoals(normalized);
+    const nextGoals = { ...goals };
+    BUDGET_CATEGORIES.forEach((category) => {
+      if (!overriddenGoals.includes(category)) nextGoals[category] = defaults[category];
+    });
     setIncome(normalized);
     setSavedIncome(normalized);
-    persist(goals, normalized);
+    setGoals(nextGoals);
+    persist(nextGoals, normalized, overriddenGoals);
+  };
+
+  const resetGoalToRecommended = (category: BudgetCategory) => {
+    const nextOverriddenGoals = overriddenGoals.filter((item) => item !== category);
+    const nextGoals = { ...goals, [category]: recommendedGoals(income)[category] };
+    setOverriddenGoals(nextOverriddenGoals);
+    setGoals(nextGoals);
+    setDirty(true);
+    setSaveStatus("idle");
   };
 
   const navigateMonth = (direction: -1 | 1) => {
@@ -93,6 +113,7 @@ export function useBudget() {
     transactionIncome,
     previousIncome,
     goals,
+    overriddenGoals,
     numericGoals,
     actuals,
     lastSavedAt,
@@ -101,6 +122,7 @@ export function useBudget() {
     setYear,
     setIncome,
     setGoal,
+    resetGoalToRecommended,
     saveIncome,
     navigateMonth,
     save: () => persist(),

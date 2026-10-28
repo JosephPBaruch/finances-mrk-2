@@ -1,19 +1,18 @@
-# TODO
+# Completed TODOs
 
-- Configure settings to exclude necessary file watching for dotnet application so my disk space does get all eaten up
-- Frontend side drawer CSS needs tweeking and to be collapsible
-- Overall general review of the code to makeß sure the arch and org is good 
-- BUG: All of the accounts on the account page are quadlicated (there are 4 of each)
-- TASK: Show account column in the transactions 
-- STORY: Support different types of accounts such as credit/debit card, venmo, savings (401k), HYSA, brokerage, HYSA
-- STORY: Show account overview with different balances in each account
-- STORY: Plaid category confidence. 
-  - If the plaidCategoryConfidence is low level than flag the transaction for me to assign the cateogry, from the list of categories. If it is higher level then automatically set the cateogry. This shouldn't be a requirement to do but default to the plaid one
-  - Allow filtering for ease of use 
-- TASK: Set the default budget percentages to the recommended if the recommended hasn't been overrided. Make each month show that if it has been set from the budget defaults or not.
-- STORY: Make the app mirror the API a little bit closer. So show a better overview of net worth, transaction totals, etc
-- STORY: Show wealth perjection over time in a new tab to estimate how much money you will have at a specific time if you continue on the current reate. ß
-- STORY: Provide auth for signing into the account. There will only be one admin user who should set the admin user password on account creation. The user will then change the password only via the database. Document this. 
+- [x] Exclude generated .NET/frontend output, SQLite sidecars, reports, and dependencies from VS Code file watching and search.
+- [x] Polish the frontend side drawer and make its compact state collapsible, accessible, responsive, and persistent.
+- [x] Review the architecture and organization. See `docs/ArchitectureReview.md` for boundaries, decisions, and intentional constraints.
+- [x] Fix quadrupled account rendering by de-duplicating normalized account payloads by stable application account ID.
+- [x] Show the account name and masked suffix in the transaction grid.
+- [x] Support friendly presentation of checking/debit, credit, Venmo/digital wallets, savings/HYSA, 401(k), brokerage/investment, loan, and unknown future account types.
+- [x] Add an Accounts overview with net worth, assets, liabilities, current/available balances, filters, institutions, and balance refresh.
+- [x] Add Plaid confidence review: low/unknown confidence flags, optional category assignment, Plaid-default behavior, row highlighting, and confidence/review filters.
+- [x] Apply recommended percentages to new monthly budgets, persist per-category override metadata, label recommended/custom goals, and allow restoring defaults.
+- [x] Expand Summary with API-aligned net worth, assets, liabilities, monthly inflow/outflow, net cash flow, transaction totals, and review exceptions.
+- [x] Add a Wealth Projection tab with live starting net worth, recent-cash-flow suggestion, editable assumptions, target timing, and nominal/real charts.
+- [x] Add single-admin authentication with one-time password setup, PBKDF2 hashing, HTTP-only cookie sessions, protected APIs, sign-in/out UI, migration, and database-only reset documentation.
+- TASK: Add a favicon based on the theme which is just the letter F in the correct font.
 
 ## Key
 
